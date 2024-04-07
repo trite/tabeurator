@@ -7,6 +7,9 @@
     "48": "icons/tabeurator-48.png",
     "96": "icons/tabeurator-96.png"
   },
+  "permissions": [
+    "tabs"
+  ],
   "content_scripts": [
     {
       "matches": [
