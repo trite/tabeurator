@@ -29,6 +29,15 @@ body.dark-mode {
 #searchButton {
   margin-right: 70px; /* Add right margin to the search button */
 }
+#results ul {
+  list-style-type: none; /* Remove bullet points */
+  padding: 0; /* Remove padding */
+}
+#results li {
+  border: 1px solid #000; /* Add border */
+  margin-bottom: 10px; /* Add margin */
+  padding: 10px; /* Add padding */
+}
 .toggle-switch {
   position: absolute;
   top: 10px;

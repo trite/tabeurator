@@ -58,3 +58,17 @@ browser.browserAction.onClicked.addListener((tab) => {
   });
   browser.browserAction.openPopup();
 });
+
+
+// Set storage defaults
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'install') {
+    // Extension is installed for the first time
+    let defaultValues = { theme: 'dark' };
+    chrome.storage.local.set(defaultValues, function () {
+      console.log('Default values set.');
+    });
+  } else if (details.reason === 'update') {
+    // Extension is updated
+  }
+});

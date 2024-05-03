@@ -25,12 +25,28 @@ chrome.storage.local.get('theme', (items) => {
 });
 
 // When the search box input changes, perform a search.
-document.getElementById('searchBox').addEventListener('input', (event) => {
-  var query = event.target.value;
+document.getElementById('searchBox').addEventListener('input', function (event) {
+  var query = event.target.value.toLowerCase();
 
-  // TODO: implement search
+  chrome.tabs.query({}, function (tabs) {
+    var matchingTabs = tabs.filter(function (tab) {
+      return tab.title.toLowerCase().includes(query);
+    }).slice(0, 10); // Limit to the first 10 matches
 
-  document.getElementById('results').textContent = 'Search results for: ' + query;
+    var resultsList = document.createElement('ul');
+    matchingTabs.forEach(function (tab) {
+      var listItem = document.createElement('li');
+      listItem.textContent = tab.title;
+      resultsList.appendChild(listItem);
+    });
+
+    var resultsDiv = document.getElementById('results');
+    // Clear any previous results
+    while (resultsDiv.firstChild) {
+      resultsDiv.removeChild(resultsDiv.firstChild);
+    }
+    resultsDiv.appendChild(resultsList);
+  });
 });
 
 // Focus search box on popup open. The timeout is a workaround,
