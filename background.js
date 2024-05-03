@@ -10,11 +10,12 @@
  *       shortcut: "Ctrl+Shift+U"
  *    }]
  */
-let gettingAllCommands = browser.commands.getAll();
-gettingAllCommands.then((commands) => {
+let allCommands = browser.commands.getAll();
+allCommands.then((commands) => {
   console.log("commands:");
   for (let command of commands) {
-    // Note that this logs to the Add-on Debugger's console: https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Debugging
+    // Note that this logs to the Add-on Debugger's console:
+    //   https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Debugging
     // not the regular Web console.
     console.log("  " + command.name);
   }
@@ -28,11 +29,16 @@ gettingAllCommands.then((commands) => {
  * On Mac, this command will automatically be converted to "Command+Shift+U".
  */
 browser.commands.onCommand.addListener((command) => {
-  if (command === "toggle-feature") {
-    console.log("Ctrl+Shift+U was pressed");
+  if (command === "foo-bar") {
+    console.log("Ctrl+Shift+Y was pressed");
     browser.tabs.create({ url: "https://developer.mozilla.org" });
   } else if (command === "tab-search") {
-    console.log("Tab search shortcut was pressed");
+    browser.windows.create({
+      url: browser.runtime.getURL("search_box.html"),
+      type: "popup",
+      height: 200,
+      width: 400
+    });
   } else {
     console.log("Command not found: ", command);
   }

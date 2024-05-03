@@ -16,17 +16,17 @@
     ]
   },
   "commands": {
-    "toggle-feature": {
+    "foo-bar": {
       "suggested_key": {
         "default": "Ctrl+Shift+Y"
       },
       "description": "Send a 'toggle-feature' event to the extension"
     },
-    "_execute_action": {
+    "tab-search": {
       "suggested_key": {
         "default": "Ctrl+Shift+Space"
       },
-      "description": "Send a '_execute_action' event to the extension"
+      "description": "Tab Search"
     }
   },
   "options_ui": {
