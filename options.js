@@ -1,4 +1,4 @@
-const commandName = 'toggle-feature';
+const commandName = '_execute_browser_action';
 
 /**
  * Update the UI: set the value of the shortcut textbox.
@@ -31,6 +31,14 @@ async function resetShortcut() {
 }
 
 /**
+ * Update the theme in storage when the theme toggle is changed.
+ */
+function updateTheme() {
+  let theme = this.checked ? 'dark' : 'light';
+  browser.storage.local.set({ theme: theme });
+}
+
+/**
  * Update the UI when the page loads.
  */
 document.addEventListener('DOMContentLoaded', updateUI);
@@ -40,3 +48,8 @@ document.addEventListener('DOMContentLoaded', updateUI);
  */
 document.querySelector('#update').addEventListener('click', updateShortcut)
 document.querySelector('#reset').addEventListener('click', resetShortcut)
+
+/**
+ * Update the theme based on the toggle switch.
+ */
+document.querySelector('#themeToggle').addEventListener('change', updateTheme);
