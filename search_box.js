@@ -25,25 +25,18 @@ chrome.storage.local.get('theme', (items) => {
 });
 
 // When the search box input changes, perform a search.
-document.getElementById('searchBox').addEventListener('input', () => {
-  var query = this.value;
+document.getElementById('searchBox').addEventListener('input', (event) => {
+  var query = event.target.value;
+
   // TODO: implement search
+
+  document.getElementById('results').textContent = 'Search results for: ' + query;
 });
 
-// Focus search box on popup open
+// Focus search box on popup open. The timeout is a workaround,
+//   without it the focus doesn't happen 100% of the time
 document.addEventListener('DOMContentLoaded', () => {
-
-  var searchBox = document.getElementById('searchBox');
-  searchBox.focus();
-  // setTimeout(() => {
-  //   var searchBox = document.getElementById('searchBox');
-  //   searchBox.focus();
-  // }, 0);
+  setTimeout(() => {
+    document.getElementById('searchBox').focus();
+  }, 50);
 });
-// document.addEventListener('DOMContentLoaded', (event) => {
-//   console.log('DOM has loaded');
-//   // document.querySelector('body').focus();
-//   document.querySelector('searchBox').focus();
-// }, false);
-
-// console.log('popup.js loaded!');
