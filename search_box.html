@@ -1,89 +1,96 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <style id="themeStyle">
-    :root {
-      --background-color: #fff;
-      --text-color: #000;
-      --input-background: #fff;
-      --input-color: #000;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      margin: 10px;
-      background-color: var(--background-color);
-      color: var(--text-color);
-    }
-    #searchBox {
-      width: 300px;
-      height: 25px;
-      padding: 5px;
-      border: none;
-      border-radius: 5px;
-      background-color: var(--input-background);
-      color: var(--input-color);
-      box-shadow: 0 0 15px 4px rgba(0,0,0,0.06);
-    }
-    #searchLabel {
-      font-size: 1.2em;
-      margin-bottom: 5px;
-      display: block;
-    }
-    .toggle-switch {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 60px;
-      height: 34px;
-    }
-    .toggle-switch input { 
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: .4s;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: .4s;
-    }
-    input:checked + .slider {
-      background-color: #2196F3;
-    }
-    input:checked + .slider:before {
-      transform: translateX(26px);
-    }
-    .slider.round {
-      border-radius: 34px;
-    }
-    .slider.round:before {
-      border-radius: 50%;
-    }
-  </style>
-</head>
-<body>
-  <label class="toggle-switch">
-    <input type="checkbox" id="themeToggle">
-    <span class="slider round"></span>
-  </label>
-  <label id="searchLabel" for="searchBox">Tab Search:</label>
-  <input type="text" id="searchBox" placeholder="Search...">
-  <button id="searchButton">Search</button>
-  <div id="results"></div>
-  <script src="search_box.js"></script>
-</body>
+  <head>
+    <style id="themeStyle">
+      body {
+        font-family: Arial, sans-serif;
+        margin: 10px;
+      }
+      body.light-mode {
+        background-color: #fff;
+        color: #000;
+      }
+      body.dark-mode {
+        background-color: #333;
+        color: #fff;
+      }
+      #searchBox {
+        width: 300px;
+        height: 25px;
+        padding: 5px;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 0 0 15px 4px rgba(0, 0, 0, 0.06);
+      }
+      #searchBox.light-mode {
+        background-color: #fff;
+        color: #000;
+      }
+      #searchBox.dark-mode {
+        background-color: #555;
+        color: #fff;
+      }
+      #searchButton {
+        margin-right: 70px; /* Add right margin to the search button */
+      }
+      .toggle-switch {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 60px;
+        height: 34px;
+      }
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+      }
+      input:checked + .slider {
+        background-color: #2196f3;
+      }
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+      .slider.round {
+        border-radius: 34px;
+      }
+      .slider.round:before {
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body class="light-mode">
+    <div id="header">
+      <h1 id="searchLabel">Tab Search:</h1>
+      <label class="toggle-switch">
+        <input type="checkbox" id="themeToggle" />
+        <span class="slider round"></span>
+      </label>
+    </div>
+    <div id="searchRow">
+      <input type="text" id="searchBox" placeholder="Search..." />
+    </div>
+    <div id="results"></div>
+    <script src="search_box.js"></script>
+  </body>
 </html>

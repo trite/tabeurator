@@ -51,7 +51,7 @@ browser.commands.onCommand.addListener((command) => {
  * or when they press the keyboard shortcut.
  */
 browser.browserAction.onClicked.addListener((tab) => {
-  console.log("browserAction.onClicked");
+  console.log("Opening search box");
   browser.browserAction.setPopup({
     tabId: tab.id,
     popup: 'search_box.html'

@@ -8,6 +8,7 @@
     "96": "icons/tabeurator-96.png"
   },
   "permissions": [
+    "storage",
     "tabs"
   ],
   "background": {
@@ -16,8 +17,7 @@
     ]
   },
   "browser_action": {
-    "default_icon": "icons/tabeurator-32.png",
-    "default_popup": "search_box.html"
+    "default_icon": "icons/tabeurator-32.png"
   },
   "commands": {
     "foo-bar": {
