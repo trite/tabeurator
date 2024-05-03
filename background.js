@@ -32,14 +32,29 @@ browser.commands.onCommand.addListener((command) => {
   if (command === "foo-bar") {
     console.log("Ctrl+Shift+Y was pressed");
     browser.tabs.create({ url: "https://developer.mozilla.org" });
-  } else if (command === "tab-search") {
-    browser.windows.create({
-      url: browser.runtime.getURL("search_box.html"),
-      type: "popup",
-      height: 200,
-      width: 400
-    });
-  } else {
+  }
+  // else if (command === "tab-search") {
+  //   browser.windows.create({
+  //     url: browser.runtime.getURL("search_box.html"),
+  //     type: "popup",
+  //     height: 200,
+  //     width: 400
+  //   });
+  // } 
+  else {
     console.log("Command not found: ", command);
   }
+});
+
+/**
+ * Fired when the user clicks on the browser action
+ * or when they press the keyboard shortcut.
+ */
+browser.browserAction.onClicked.addListener((tab) => {
+  console.log("browserAction.onClicked");
+  browser.browserAction.setPopup({
+    tabId: tab.id,
+    popup: 'search_box.html'
+  });
+  browser.browserAction.openPopup();
 });
