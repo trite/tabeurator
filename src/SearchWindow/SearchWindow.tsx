@@ -27,6 +27,7 @@ import MessagePanel, {
   Message,
 } from "./MessagePanel";
 import { logDebug } from "../Shared/Logger";
+import { switchToTab } from "../Shared/Chrome";
 
 // Define a styled component using Emotion
 const StyledBox = styled(Box)({
@@ -283,9 +284,6 @@ const App: React.FC = () => {
       }),
     [prefersDarkMode]
   );
-
-  const switchToTab = (newTabId: number) =>
-    chrome.tabs.update(newTabId, { active: true }, () => window.close());
 
   const handleSearchBoxKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "ArrowDown") {

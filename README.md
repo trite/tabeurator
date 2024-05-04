@@ -1,5 +1,9 @@
 # Tabeurator
 
+## Resuming:
+
+still need to get the previous tab shortcut to work with it and doesn't yet capture when moving to a window without also changing tabs, which kind of messes with the goal of last tab meaning last tab viewed (focused)?
+
 ## TODO
 
 - [ ] Figure out better fuzzy search settings, there's lots to work with but just need to sit down and take the time

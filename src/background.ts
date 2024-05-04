@@ -1,14 +1,15 @@
 import browser from "webextension-polyfill";
 
 import { SortMethod } from "./Shared/SortMethod";
-import { logDebug } from "./Shared/Logger";
+import * as Logger from "./Shared/Logger";
+import * as Chrome from "./Shared/Chrome";
 
 /**
  * Fired when the user clicks on the browser action
  * or when they press the keyboard shortcut.
  */
 browser.browserAction.onClicked.addListener((tab) => {
-  logDebug("Opening search box");
+  Logger.logDebug("Opening search box");
   browser.browserAction.setPopup({
     tabId: tab.id,
     popup: "searchWindow.html",
@@ -26,7 +27,7 @@ chrome.runtime.onInstalled.addListener((details) => {
       // theme: "dark", // Not used until theme override is implemented
     };
     chrome.storage.local.set(defaultValues, function () {
-      logDebug("Default values set.");
+      Logger.logDebug("Default values set.");
     });
   } else if (details.reason === "update") {
     // Extension is updated, do nothing for now but might use later
@@ -59,7 +60,7 @@ browser.storage.onChanged.addListener((changes, areaName) => {
 });
 
 browser.tabs.onActivated.addListener((activeInfo) => {
-  logDebug("Before updating MRV order", mrvOrder, activeInfo.tabId);
+  Logger.logDebug("Before updating MRV order", mrvOrder, activeInfo.tabId);
 
   if (trackMrv) {
     const index = mrvOrder.indexOf(activeInfo.tabId);
@@ -69,7 +70,7 @@ browser.tabs.onActivated.addListener((activeInfo) => {
     mrvOrder.unshift(activeInfo.tabId);
   }
 
-  logDebug("After updating MRV order", mrvOrder);
+  Logger.logDebug("After updating MRV order", mrvOrder);
 });
 
 // Expose a function to get the MRV order
@@ -90,12 +91,14 @@ browser.commands.onCommand.addListener((command) => {
     // If mrvOrder has length 1 it means the user has only visited 1 tab
     // Need at least 2 items in order to navigate to the previous tab
     if (mrvOrder.length > 1) {
-      logDebug("Navigating to previous tab (tab id: " + mrvOrder[0] + ")");
-      browser.tabs.update(mrvOrder[1], { active: true });
+      Logger.logDebug(
+        "Navigating to previous tab (tab id: " + mrvOrder[0] + ")"
+      );
+      Chrome.switchToTab(mrvOrder[1]);
     } else {
-      logDebug("No previous tabs to navigate to");
+      Logger.logDebug("No previous tabs to navigate to");
     }
   } else {
-    logDebug("Command not found: ", command);
+    Logger.logDebug("Command not found: ", command);
   }
 });
