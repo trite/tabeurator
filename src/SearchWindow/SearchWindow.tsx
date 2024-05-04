@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/system";
 import browser from "webextension-polyfill";
+import Fuse from "fuse.js";
 
 // Define a styled component using Emotion
 const StyledBox = styled(Box)({
@@ -51,7 +52,12 @@ const ResultsList: React.FC<{
         onClick={() => onListItemClick(tab)}
       >
         <ListItemAvatar>
-          <Avatar alt="" src={tab.favIconUrl} sx={{ width: 24, height: 24 }} />
+          <Avatar
+            alt=""
+            // TODO: Return Tabeurator favicon (or something else) instead of empty string
+            src={tab.favIconUrl?.startsWith("chrome://") ? "" : tab.favIconUrl}
+            sx={{ width: 24, height: 24 }}
+          />
         </ListItemAvatar>
         <ListItemText primary={tab.title} />
       </ListItemButton>
@@ -61,38 +67,55 @@ const ResultsList: React.FC<{
 
 const App: React.FC = () => {
   const [query, setQuery] = useState("");
-  const [tabs, setTabs] = useState<browser.Tabs.Tab[]>([]);
+  // const [tabs, setTabs] = useState<browser.Tabs.Tab[]>([]);
+  // const [config, setConfig] = useState<any>({});
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
   const searchBoxRef = useRef<HTMLInputElement>(null);
+  const [displayedTabs, setDisplayedTabs] = useState<browser.Tabs.Tab[]>([]);
+
+  const [data, setData] = useState<{ tabs: browser.Tabs.Tab[]; config: any }>({
+    tabs: [],
+    config: {},
+  });
 
   useEffect(() => {
-    // Fetch the tabs when the component mounts
-
-    browser.runtime.sendMessage({ type: "getMruOrder" }).then((mruOrder) => {
-      // Get all the tabs
-      return browser.tabs.query({}).then((allTabs) => {
-        // Sort the tabs based on the MRU order
-        const sortedTabs = allTabs.sort((a, b) => {
-          const indexA = mruOrder.indexOf(a.id);
-          const indexB = mruOrder.indexOf(b.id);
-          if (indexA === -1 && indexB === -1) return 0;
-          else if (indexA === -1) return 1;
-          else if (indexB === -1) return -1;
-          else return indexA - indexB;
-        });
-        setTabs(sortedTabs);
+    const fetchData = async () => {
+      const allTabs = await browser.tabs.query({});
+      const result = await browser.storage.local.get("sort-method");
+      const mruOrder = await browser.runtime.sendMessage({
+        type: "getMruOrder",
       });
-    });
-
-    // Focus the search box when the component mounts
-    setTimeout(() => {
-      searchBoxRef.current?.focus();
-    }, 50);
+      setData({
+        tabs: allTabs,
+        config: { sortOrder: result["sort-method"], mruOrder },
+      });
+    };
+    fetchData();
   }, []);
 
-  const filteredTabs = tabs.filter((tab) =>
-    tab.title?.toLowerCase().includes(query.toLowerCase())
-  );
+  useEffect(() => {
+    let processedTabs = [...data.tabs];
+
+    if (data.config.sortOrder === "Alphabetical") {
+      processedTabs.sort((a, b) => a.title?.localeCompare(b.title || "") || 0);
+    } else if (data.config.sortOrder === "MostRecentlyUpdated") {
+      processedTabs.sort((a, b) => {
+        const indexA = data.config.mruOrder.indexOf(a.id);
+        const indexB = data.config.mruOrder.indexOf(b.id);
+        if (indexA === -1 && indexB === -1) return 0;
+        else if (indexA === -1) return 1;
+        else if (indexB === -1) return -1;
+        else return indexB - indexA;
+      });
+    }
+
+    setDisplayedTabs(processedTabs);
+  }, [data]);
+
+  // // Apply fuzzy search to tabs (if search isn't empty)
+  // const fuse = new Fuse(tabs, { keys: ["title"] });
+  // const filteredTabs =
+  //   query === "" ? tabs : fuse.search(query).map((result) => result.item);
 
   // Check if the user prefers dark mode
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -117,11 +140,11 @@ const App: React.FC = () => {
       setFocusIndex(0);
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
-      setFocusIndex(filteredTabs.length - 1);
+      setFocusIndex(data.tabs.length - 1);
     } else if (event.key === "Enter") {
       event.preventDefault();
-      if (filteredTabs.length > 0) {
-        switchToTab(filteredTabs[0].id!);
+      if (data.tabs.length > 0) {
+        switchToTab(data.tabs[0].id!);
       }
     }
   };
@@ -130,7 +153,7 @@ const App: React.FC = () => {
     if (event.key === "ArrowDown") {
       event.preventDefault();
       setFocusIndex(
-        focusIndex === null || focusIndex >= filteredTabs.length - 1
+        focusIndex === null || focusIndex >= data.tabs.length - 1
           ? null
           : focusIndex + 1
       );
@@ -141,8 +164,8 @@ const App: React.FC = () => {
       );
     } else if (event.key === "Enter") {
       event.preventDefault();
-      if (focusIndex !== null && focusIndex < filteredTabs.length) {
-        switchToTab(filteredTabs[focusIndex].id!);
+      if (focusIndex !== null && focusIndex < data.tabs.length) {
+        switchToTab(data.tabs[focusIndex].id!);
       }
     }
   };
@@ -173,7 +196,7 @@ const App: React.FC = () => {
             inputRef={searchBoxRef}
           />
           <ResultsList
-            tabs={filteredTabs}
+            tabs={displayedTabs}
             onKeyDown={handleListItemKeyDown}
             onListItemClick={handleListItemClick}
           />

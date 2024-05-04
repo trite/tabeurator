@@ -7,7 +7,7 @@ const defaultShortcut = "Ctrl+Shift+Space";
 const Options = () => {
   const [shortcut, setShortcut] = useState("");
   const [trackMru, setTrackMru] = useState(true);
-  const [sortMethod, setSortMethod] = useState("MRU");
+  const [sortMethod, setSortMethod] = useState("MostRecentlyUpdated");
 
   useEffect(() => {
     const updateUI = async () => {
@@ -23,7 +23,7 @@ const Options = () => {
       const { "track-mru": trackMru, "sort-method": sortMethod } =
         await browser.storage.local.get(["track-mru", "sort-method"]);
       setTrackMru(trackMru !== undefined ? trackMru : true); // Change to true
-      setSortMethod(sortMethod || "MRU"); // Change to 'MRU'
+      setSortMethod(sortMethod || "MostRecentlyUpdated"); // Change to 'MRU'
     };
 
     updateUI();
@@ -46,7 +46,7 @@ const Options = () => {
     const trackMru = event.target.checked;
     setTrackMru(trackMru);
     browser.storage.local.set({ "track-mru": trackMru });
-    if (!trackMru && sortMethod === "MRU") {
+    if (!trackMru && sortMethod === "MostRecentlyUpdated") {
       setSortMethod("Alphabetical");
       browser.storage.local.set({ "sort-method": "Alphabetical" });
     }
@@ -93,8 +93,9 @@ const Options = () => {
         value={sortMethod}
         onChange={handleSortMethodChange}
       >
+        <option value="FuzzySearchScore">Fuzzy Search Score</option>
         <option value="Alphabetical">Alphabetical</option>
-        <option value="MRU" disabled={!trackMru}>
+        <option value="MostRecentlyUpdated" disabled={!trackMru}>
           {trackMru
             ? "Most Recently Used"
             : "Most Recently Used - Cannot use unless MRU data is tracked"}

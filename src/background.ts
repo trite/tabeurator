@@ -24,30 +24,6 @@ allCommands.then((commands) => {
   console.log("end of commands");
 });
 
-// /**
-//  * Fired when a registered command is activated using a keyboard shortcut.
-//  *
-//  * In this sample extension, there is only one registered command: "Ctrl+Shift+U".
-//  * On Mac, this command will automatically be converted to "Command+Shift+U".
-//  */
-// browser.commands.onCommand.addListener((command) => {
-//   if (command === "foo-bar") {
-//     console.log("Ctrl+Shift+Y was pressed");
-//     browser.tabs.create({ url: "https://developer.mozilla.org" });
-//   }
-//   // else if (command === "tab-search") {
-//   //   browser.windows.create({
-//   //     url: browser.runtime.getURL("search_box.html"),
-//   //     type: "popup",
-//   //     height: 200,
-//   //     width: 400
-//   //   });
-//   // }
-//   else {
-//     console.log("Command not found: ", command);
-//   }
-// });
-
 /**
  * Fired when the user clicks on the browser action
  * or when they press the keyboard shortcut.
@@ -68,7 +44,7 @@ chrome.runtime.onInstalled.addListener((details) => {
     // Extension is installed for the first time, set defaults
     let defaultValues = {
       "track-mru": true,
-      "sort-method": "MRU",
+      "sort-method": "MostRecentlyUpdated",
       // theme: "dark", // Not used until dark mode override is implemented
     };
     chrome.storage.local.set(defaultValues, function () {
@@ -79,7 +55,7 @@ chrome.runtime.onInstalled.addListener((details) => {
   }
 });
 
-// START OF Most Recent Update order tracking for tabs (if enabled)
+// START OF Most Recent Update (MRU) order tracking for tabs (if enabled)
 let mruOrder: number[] = [];
 let trackMru = false;
 
@@ -88,7 +64,7 @@ browser.storage.local
   .get(["track-mru", "sort-method"])
   .then(({ "track-mru": trackMruSetting, "sort-method": sortMethod }) => {
     trackMru = trackMruSetting || false;
-    if (sortMethod !== "MRU") {
+    if (sortMethod !== "MostRecentlyUpdated") {
       mruOrder = [];
     }
   });
@@ -99,7 +75,11 @@ browser.storage.onChanged.addListener((changes, areaName) => {
     if ("track-mru" in changes) {
       trackMru = changes["track-mru"].newValue || false;
     }
-    if ("sort-method" in changes && changes["sort-method"].newValue !== "MRU") {
+
+    if (
+      "sort-method" in changes &&
+      changes["sort-method"].newValue !== "MostRecentlyUpdated"
+    ) {
       mruOrder = [];
     }
   }
@@ -123,4 +103,4 @@ browser.runtime.onMessage.addListener(
     }
   }
 );
-// END OF Most Recent Update order tracking for tabs
+// END OF Most Recent Update (MRU) order tracking for tabs
