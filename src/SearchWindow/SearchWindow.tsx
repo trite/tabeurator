@@ -26,6 +26,7 @@ import MessagePanel, {
   errorMessage,
   Message,
 } from "./MessagePanel";
+import { logDebug } from "../Shared/Logger";
 
 // Define a styled component using Emotion
 const StyledBox = styled(Box)({
@@ -226,12 +227,12 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    console.log("Sort order:", state.data.config.sortOrder);
-    console.log("MRV order:", state.data.config.mrvOrder);
+    logDebug("Sort order:", state.data.config.sortOrder);
+    logDebug("MRV order:", state.data.config.mrvOrder);
 
     let processedTabs = [...state.data.tabs];
 
-    console.log(
+    logDebug(
       "Tabs before sorting:",
       processedTabs.map((tab) => tab.id)
     );
@@ -253,7 +254,7 @@ const App: React.FC = () => {
       }
     }
 
-    console.log(
+    logDebug(
       "Tabs after sorting:",
       processedTabs.map((tab) => tab.id)
     );

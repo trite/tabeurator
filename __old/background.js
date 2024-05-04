@@ -12,14 +12,14 @@
  */
 let allCommands = browser.commands.getAll();
 allCommands.then((commands) => {
-  console.log("commands:");
+  logDebug("commands:");
   for (let command of commands) {
     // Note that this logs to the Add-on Debugger's console:
     //   https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Debugging
     // not the regular Web console.
-    console.log("  " + command.name);
+    logDebug("  " + command.name);
   }
-  console.log("end of commands");
+  logDebug("end of commands");
 });
 
 /**
@@ -30,7 +30,7 @@ allCommands.then((commands) => {
  */
 browser.commands.onCommand.addListener((command) => {
   if (command === "foo-bar") {
-    console.log("Ctrl+Shift+Y was pressed");
+    logDebug("Ctrl+Shift+Y was pressed");
     browser.tabs.create({ url: "https://developer.mozilla.org" });
   }
   // else if (command === "tab-search") {
@@ -42,7 +42,7 @@ browser.commands.onCommand.addListener((command) => {
   //   });
   // } 
   else {
-    console.log("Command not found: ", command);
+    logDebug("Command not found: ", command);
   }
 });
 
@@ -51,7 +51,7 @@ browser.commands.onCommand.addListener((command) => {
  * or when they press the keyboard shortcut.
  */
 browser.browserAction.onClicked.addListener((tab) => {
-  console.log("Opening search box");
+  logDebug("Opening search box");
   browser.browserAction.setPopup({
     tabId: tab.id,
     popup: 'search_box.html'
@@ -66,7 +66,7 @@ chrome.runtime.onInstalled.addListener((details) => {
     // Extension is installed for the first time
     let defaultValues = { theme: 'dark' };
     chrome.storage.local.set(defaultValues, function () {
-      console.log('Default values set.');
+      logDebug('Default values set.');
     });
   } else if (details.reason === 'update') {
     // Extension is updated
