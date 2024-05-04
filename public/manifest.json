@@ -20,12 +20,6 @@
     "default_icon": "tabeurator-48.png"
   },
   "commands": {
-    "foo-bar": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+Y"
-      },
-      "description": "Send a 'toggle-feature' event to the extension"
-    },
     "_execute_browser_action": {
       "suggested_key": {
         "default": "Ctrl+Shift+Space"
@@ -34,7 +28,7 @@
     }
   },
   "options_ui": {
-    "page": "options.html",
+    "page": "optionsPane.html",
     "browser_style": true
   }
 }
