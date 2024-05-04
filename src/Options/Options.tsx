@@ -8,8 +8,8 @@ const defaultShortcut = "Ctrl+Shift+Space";
 
 const Options = () => {
   const [shortcut, setShortcut] = useState("");
-  const [trackMru, setTrackMru] = useState(true);
-  const [sortMethod, setSortMethod] = useState(SortMethod.MostRecentlyUpdated);
+  const [trackMrv, setTrackMrv] = useState(true);
+  const [sortMethod, setSortMethod] = useState(SortMethod.MostRecentlyVisited);
 
   useEffect(() => {
     const updateUI = async () => {
@@ -22,10 +22,10 @@ const Options = () => {
     };
 
     const loadSettings = async () => {
-      const { "track-mru": trackMru, "sort-method": sortMethod } =
-        await browser.storage.local.get(["track-mru", "sort-method"]);
-      setTrackMru(trackMru !== undefined ? trackMru : true); // Default to true
-      setSortMethod(sortMethod || SortMethod.MostRecentlyUpdated); // Default to MRU sorting
+      const { "track-mrv": trackMrv, "sort-method": sortMethod } =
+        await browser.storage.local.get(["track-mrv", "sort-method"]);
+      setTrackMrv(trackMrv !== undefined ? trackMrv : true); // Default to true
+      setSortMethod(sortMethod || SortMethod.MostRecentlyVisited); // Default to MRV sorting
     };
 
     updateUI();
@@ -44,11 +44,11 @@ const Options = () => {
     setShortcut(defaultShortcut);
   };
 
-  const handleTrackMruChange = (event: { target: { checked: boolean } }) => {
-    const trackMru = event.target.checked;
-    setTrackMru(trackMru);
-    browser.storage.local.set({ "track-mru": trackMru });
-    if (!trackMru && sortMethod === SortMethod.MostRecentlyUpdated) {
+  const handleTrackMrvChange = (event: { target: { checked: boolean } }) => {
+    const trackMrv = event.target.checked;
+    setTrackMrv(trackMrv);
+    browser.storage.local.set({ "track-mrv": trackMrv });
+    if (!trackMrv && sortMethod === SortMethod.MostRecentlyVisited) {
       setSortMethod(SortMethod.Alphabetical);
       browser.storage.local.set({ "sort-method": SortMethod.Alphabetical });
     }
@@ -80,12 +80,12 @@ const Options = () => {
 
       <br />
 
-      <label htmlFor="track-mru">Track Most Recently Used:</label>
+      <label htmlFor="track-mrv">Track most recently visited (MRV) tabs:</label>
       <input
         type="checkbox"
-        id="track-mru"
-        checked={trackMru}
-        onChange={handleTrackMruChange}
+        id="track-mrv"
+        checked={trackMrv}
+        onChange={handleTrackMrvChange}
       />
 
       <br />
@@ -98,10 +98,10 @@ const Options = () => {
       >
         <option value={SortMethod.FuzzySearchScore}>Fuzzy Search Score</option>
         <option value={SortMethod.Alphabetical}>Alphabetical</option>
-        <option value={SortMethod.MostRecentlyUpdated} disabled={!trackMru}>
-          {trackMru
-            ? "Most Recently Used"
-            : "Most Recently Used - Cannot use unless MRU data is tracked"}
+        <option value={SortMethod.MostRecentlyVisited} disabled={!trackMrv}>
+          {trackMrv
+            ? "Most Recently Visited"
+            : "Most Recently Visited - Cannot use unless MRV data is tracked"}
         </option>
       </select>
     </form>

@@ -60,19 +60,19 @@ document.querySelector('#reset').addEventListener('click', resetShortcut)
 
 document.addEventListener('DOMContentLoaded', () => {
   // Load the current settings
-  browser.storage.local.get(['track-mru', 'sort-method'])
-    .then(({ 'track-mru': trackMru, 'sort-method': sortMethod }) => {
-      document.getElementById('track-mru').checked = trackMru || false;
+  browser.storage.local.get(['track-mrv', 'sort-method'])
+    .then(({ 'track-mrv': trackMrv, 'sort-method': sortMethod }) => {
+      document.getElementById('track-mrv').checked = trackMrv || false;
       document.getElementById('sort-method').value = sortMethod || 'Alphabetical';
-      updateMruOption(trackMru);
+      updateMrvOption(trackMrv);
     });
 
   // Save the settings when they change
-  document.getElementById('track-mru').addEventListener('change', (event) => {
-    const trackMru = event.target.checked;
-    browser.storage.local.set({ 'track-mru': trackMru });
-    updateMruOption(trackMru);
-    if (!trackMru && document.getElementById('sort-method').value === 'MRU') {
+  document.getElementById('track-mrv').addEventListener('change', (event) => {
+    const trackMrv = event.target.checked;
+    browser.storage.local.set({ 'track-mrv': trackMrv });
+    updateMrvOption(trackMrv);
+    if (!trackMrv && document.getElementById('sort-method').value === 'MRV') {
       browser.storage.local.set({ 'sort-method': 'Alphabetical' });
       document.getElementById('sort-method').value = 'Alphabetical';
     }
@@ -85,8 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
   updateUI();
 });
 
-function updateMruOption(trackMru) {
-  const mruOption = document.querySelector('#sort-method option[value="MRU"]');
-  mruOption.disabled = !trackMru;
-  mruOption.textContent = trackMru ? 'Most Recently Used' : 'Most Recently Used - Cannot use unless MRU data is tracked';
+function updateMrvOption(trackMrv) {
+  const mrvOption = document.querySelector('#sort-method option[value="MRV"]');
+  mrvOption.disabled = !trackMrv;
+  mrvOption.textContent = trackMrv ? 'Most Recently Visited' : 'Most Recently Visited - Cannot use unless MRV data is tracked';
 }

@@ -22,9 +22,15 @@
   "commands": {
     "_execute_browser_action": {
       "suggested_key": {
-        "default": "Ctrl+Shift+Space"
+        "default": "Ctrl+Space"
       },
       "description": "Tab Search"
+    },
+    "previous_tab": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Space"
+      },
+      "description": "Go To Previous Tab (Most Recently Visited)"
     }
   },
   "options_ui": {

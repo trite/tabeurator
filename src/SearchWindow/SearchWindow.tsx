@@ -92,47 +92,55 @@ type Action =
   | { type: "setQuery"; payload: string }
   | { type: "setFocusIndex"; payload: number | null }
   | { type: "setDisplayedTabs"; payload: browser.Tabs.Tab[] }
-  | { type: "setMessages"; payload: Message[] }
+  | { type: "addMessages"; payload: Message[] }
+  | { type: "removeMessages"; payload: Message[] }
   | { type: "setData"; payload: { tabs: browser.Tabs.Tab[]; config: any } };
 
 // Action helpers
-function setQuery(dispatch: React.Dispatch<Action>, query: string): void {
+const setQuery = (dispatch: React.Dispatch<Action>, query: string): void => {
   dispatch({ type: "setQuery", payload: query });
-}
+};
 
-function setFocusIndex(
+const setFocusIndex = (
   dispatch: React.Dispatch<Action>,
   focusIndex: number | null
-): void {
+): void => {
   dispatch({ type: "setFocusIndex", payload: focusIndex });
-}
+};
 
-function setDisplayedTabs(
+const setDisplayedTabs = (
   dispatch: React.Dispatch<Action>,
   tabs: browser.Tabs.Tab[]
-): void {
+): void => {
   dispatch({ type: "setDisplayedTabs", payload: tabs });
-}
+};
 
-function setMessages(
+const addMessages = (
   dispatch: React.Dispatch<Action>,
   messages: Message[]
-): void {
-  dispatch({ type: "setMessages", payload: messages });
-}
+): void => {
+  dispatch({ type: "addMessages", payload: messages });
+};
 
-function setData(
+const removeMessages = (
+  dispatch: React.Dispatch<Action>,
+  messages: Message[]
+): void => {
+  dispatch({ type: "removeMessages", payload: messages });
+};
+
+const setData = (
   dispatch: React.Dispatch<Action>,
   data: {
     tabs: browser.Tabs.Tab[];
     config: any;
   }
-): void {
+): void => {
   dispatch({ type: "setData", payload: data });
-}
+};
 
 // Define the reducer function
-function reducer(state: State, action: Action): State {
+const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "setQuery":
       return { ...state, query: action.payload };
@@ -140,15 +148,31 @@ function reducer(state: State, action: Action): State {
       return { ...state, focusIndex: action.payload };
     case "setDisplayedTabs":
       return { ...state, displayedTabs: action.payload };
-    case "setMessages":
-      return { ...state, messages: action.payload };
+    case "addMessages": {
+      action.payload.forEach((message) => {
+        if (!state.messages.includes(message)) {
+          state.messages.push(message);
+        }
+      });
+      return state;
+    }
+    case "removeMessages": {
+      action.payload.forEach((message) => {
+        const index = state.messages.indexOf(message);
+        if (index !== -1) {
+          // returns everything except for the index item (effectively removing it)
+          state.messages.splice(index, 1);
+        }
+      });
+      return state;
+    }
     case "setData":
       return { ...state, data: action.payload };
     // TODO: should probably display a message on the message panel when this happens
     default:
       return state;
   }
-}
+};
 
 // Define the initial state
 const initialState: State = {
@@ -161,6 +185,15 @@ const initialState: State = {
     config: {},
   },
 };
+
+module Messages {
+  export const mrvOrderEmpty = warningMessage({
+    message:
+      "Most Recently Visited sort method is enabled, but no tabs have been visited yet.",
+    resolution:
+      "Visit at least 1 tab to populate the Most Recently Visited order.",
+  });
+}
 
 const App: React.FC = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -176,8 +209,8 @@ const App: React.FC = () => {
     const fetchData = async () => {
       const allTabs = await browser.tabs.query({});
       const result = await browser.storage.local.get("sort-method");
-      const mruOrder = await browser.runtime.sendMessage({
-        type: "getMruOrder",
+      const mrvOrder = await browser.runtime.sendMessage({
+        type: "getMrvOrder",
       });
       const currentTab = await getCurrentTab();
 
@@ -186,7 +219,7 @@ const App: React.FC = () => {
 
       setData(dispatch, {
         tabs: allOtherTabs,
-        config: { sortOrder: result["sort-method"], mruOrder },
+        config: { sortOrder: result["sort-method"], mrvOrder },
       });
     };
     fetchData();
@@ -194,7 +227,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     console.log("Sort order:", state.data.config.sortOrder);
-    console.log("MRU order:", state.data.config.mruOrder);
+    console.log("MRV order:", state.data.config.mrvOrder);
 
     let processedTabs = [...state.data.tabs];
 
@@ -205,27 +238,18 @@ const App: React.FC = () => {
 
     if (state.data.config.sortOrder === SortMethod.Alphabetical) {
       processedTabs.sort((a, b) => a.title?.localeCompare(b.title || "") || 0);
-    } else if (state.data.config.sortOrder === SortMethod.MostRecentlyUpdated) {
-      if (state.data.config.mruOrder.length > 0) {
+    } else if (state.data.config.sortOrder === SortMethod.MostRecentlyVisited) {
+      if (state.data.config.mrvOrder.length > 0) {
         processedTabs.sort((a, b) => {
-          const indexA = state.data.config.mruOrder.indexOf(a.id);
-          const indexB = state.data.config.mruOrder.indexOf(b.id);
+          const indexA = state.data.config.mrvOrder.indexOf(a.id);
+          const indexB = state.data.config.mrvOrder.indexOf(b.id);
           if (indexA === -1 && indexB === -1) return 0;
           else if (indexA === -1) return 1;
           else if (indexB === -1) return -1;
           else return indexA - indexB;
         });
       } else {
-        setMessages(
-          dispatch,
-          state.messages.concat(
-            warningMessage({
-              message:
-                "Most Recently Updated sort method is enabled, but no tabs have been visited yet.",
-              resolution: "Visit at least 1 tab to populate the MRU order.",
-            })
-          )
-        );
+        addMessages(dispatch, [Messages.mrvOrderEmpty]);
       }
     }
 
@@ -268,11 +292,11 @@ const App: React.FC = () => {
       setFocusIndex(dispatch, 0);
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
-      setFocusIndex(dispatch, state.data.tabs.length - 1);
+      setFocusIndex(dispatch, state.displayedTabs.length - 1);
     } else if (event.key === "Enter") {
       event.preventDefault();
-      if (state.data.tabs.length > 0) {
-        switchToTab(state.data.tabs[0].id!);
+      if (state.displayedTabs.length > 0) {
+        switchToTab(state.displayedTabs[0].id!);
       }
     }
   };
@@ -283,7 +307,7 @@ const App: React.FC = () => {
       setFocusIndex(
         dispatch,
         state.focusIndex === null ||
-          state.focusIndex >= state.data.tabs.length - 1
+          state.focusIndex >= state.displayedTabs.length - 1
           ? null
           : state.focusIndex + 1
       );
@@ -299,9 +323,9 @@ const App: React.FC = () => {
       event.preventDefault();
       if (
         state.focusIndex !== null &&
-        state.focusIndex < state.data.tabs.length
+        state.focusIndex < state.displayedTabs.length
       ) {
-        switchToTab(state.data.tabs[state.focusIndex].id!);
+        switchToTab(state.displayedTabs[state.focusIndex].id!);
       }
     }
   };
