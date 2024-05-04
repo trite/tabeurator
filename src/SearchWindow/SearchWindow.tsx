@@ -16,6 +16,14 @@ import { styled } from "@mui/system";
 import browser from "webextension-polyfill";
 import Fuse from "fuse.js";
 
+import { SortMethod } from "../Shared/SortMethod";
+import MessagePanel, {
+  InfoMessage,
+  WarningMessage,
+  ErrorMessage,
+  Message,
+} from "./MessagePanel";
+
 // Define a styled component using Emotion
 const StyledBox = styled(Box)({
   borderRadius: "5px",
@@ -31,6 +39,7 @@ const SearchBox: React.FC<{
   inputRef: React.RefObject<HTMLInputElement>;
 }> = ({ query, onQueryChange, onKeyDown, inputRef }) => (
   <TextField
+    style={{ width: "100%" }}
     value={query}
     onChange={(event) => onQueryChange(event.target.value)}
     onKeyDown={onKeyDown}
@@ -72,6 +81,7 @@ const App: React.FC = () => {
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
   const searchBoxRef = useRef<HTMLInputElement>(null);
   const [displayedTabs, setDisplayedTabs] = useState<browser.Tabs.Tab[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const [data, setData] = useState<{ tabs: browser.Tabs.Tab[]; config: any }>({
     tabs: [],
@@ -94,28 +104,58 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    console.log("Sort order:", data.config.sortOrder);
+    console.log("MRU order:", data.config.mruOrder);
+
     let processedTabs = [...data.tabs];
 
-    if (data.config.sortOrder === "Alphabetical") {
+    console.log(
+      "Tabs before sorting:",
+      processedTabs.map((tab) => tab.title)
+    );
+
+    if (data.config.sortOrder === SortMethod.Alphabetical) {
       processedTabs.sort((a, b) => a.title?.localeCompare(b.title || "") || 0);
-    } else if (data.config.sortOrder === "MostRecentlyUpdated") {
-      processedTabs.sort((a, b) => {
-        const indexA = data.config.mruOrder.indexOf(a.id);
-        const indexB = data.config.mruOrder.indexOf(b.id);
-        if (indexA === -1 && indexB === -1) return 0;
-        else if (indexA === -1) return 1;
-        else if (indexB === -1) return -1;
-        else return indexB - indexA;
+    } else if (data.config.sortOrder === SortMethod.MostRecentlyUpdated) {
+      if (data.config.mruOrder.length > 0) {
+        processedTabs.sort((a, b) => {
+          const indexA = data.config.mruOrder.indexOf(a.id);
+          const indexB = data.config.mruOrder.indexOf(b.id);
+          if (indexA === -1 && indexB === -1) return 0;
+          else if (indexA === -1) return 1;
+          else if (indexB === -1) return -1;
+          else return indexB - indexA;
+        });
+      } else {
+        setMessages(
+          messages.concat({
+            type: "Warning",
+            message:
+              "Most Recently Updated sort method is enabled, but no tabs have been visited yet.",
+            resolution: "Visit at least 1 tab to populate the MRU order.",
+          })
+        );
+        // Raise a notification to the UI that MRU order is not yet populated
+        // Maybe have it explain that this happens on first install
+        //   until you visit at least 1 tab
+      }
+    }
+
+    console.log(
+      "Tabs after sorting:",
+      processedTabs.map((tab) => tab.title)
+    );
+
+    if (query !== "") {
+      const fuse = new Fuse(processedTabs, {
+        keys: ["title"],
+        shouldSort: data.config.sortOrder === SortMethod.FuzzySearchScore,
       });
+      processedTabs = fuse.search(query).map((result) => result.item);
     }
 
     setDisplayedTabs(processedTabs);
-  }, [data]);
-
-  // // Apply fuzzy search to tabs (if search isn't empty)
-  // const fuse = new Fuse(tabs, { keys: ["title"] });
-  // const filteredTabs =
-  //   query === "" ? tabs : fuse.search(query).map((result) => result.item);
+  }, [data, query]);
 
   // Check if the user prefers dark mode
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -195,6 +235,7 @@ const App: React.FC = () => {
             onKeyDown={handleSearchBoxKeyDown}
             inputRef={searchBoxRef}
           />
+          <MessagePanel messages={messages} />
           <ResultsList
             tabs={displayedTabs}
             onKeyDown={handleListItemKeyDown}

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 
+import { SortMethod } from "../Shared/SortMethod";
+
 const commandName = "_execute_browser_action";
 const defaultShortcut = "Ctrl+Shift+Space";
 
 const Options = () => {
   const [shortcut, setShortcut] = useState("");
   const [trackMru, setTrackMru] = useState(true);
-  const [sortMethod, setSortMethod] = useState("MostRecentlyUpdated");
+  const [sortMethod, setSortMethod] = useState(SortMethod.MostRecentlyUpdated);
 
   useEffect(() => {
     const updateUI = async () => {
@@ -22,8 +24,8 @@ const Options = () => {
     const loadSettings = async () => {
       const { "track-mru": trackMru, "sort-method": sortMethod } =
         await browser.storage.local.get(["track-mru", "sort-method"]);
-      setTrackMru(trackMru !== undefined ? trackMru : true); // Change to true
-      setSortMethod(sortMethod || "MostRecentlyUpdated"); // Change to 'MRU'
+      setTrackMru(trackMru !== undefined ? trackMru : true); // Default to true
+      setSortMethod(sortMethod || SortMethod.MostRecentlyUpdated); // Default to MRU sorting
     };
 
     updateUI();
@@ -46,17 +48,18 @@ const Options = () => {
     const trackMru = event.target.checked;
     setTrackMru(trackMru);
     browser.storage.local.set({ "track-mru": trackMru });
-    if (!trackMru && sortMethod === "MostRecentlyUpdated") {
-      setSortMethod("Alphabetical");
-      browser.storage.local.set({ "sort-method": "Alphabetical" });
+    if (!trackMru && sortMethod === SortMethod.MostRecentlyUpdated) {
+      setSortMethod(SortMethod.Alphabetical);
+      browser.storage.local.set({ "sort-method": SortMethod.Alphabetical });
     }
   };
 
   const handleSortMethodChange = (event: {
     target: { value: React.SetStateAction<string> };
   }) => {
-    setSortMethod(event.target.value);
-    browser.storage.local.set({ "sort-method": event.target.value });
+    const value = event.target.value as SortMethod;
+    setSortMethod(value);
+    browser.storage.local.set({ "sort-method": value });
   };
 
   return (
@@ -93,9 +96,9 @@ const Options = () => {
         value={sortMethod}
         onChange={handleSortMethodChange}
       >
-        <option value="FuzzySearchScore">Fuzzy Search Score</option>
-        <option value="Alphabetical">Alphabetical</option>
-        <option value="MostRecentlyUpdated" disabled={!trackMru}>
+        <option value={SortMethod.FuzzySearchScore}>Fuzzy Search Score</option>
+        <option value={SortMethod.Alphabetical}>Alphabetical</option>
+        <option value={SortMethod.MostRecentlyUpdated} disabled={!trackMru}>
           {trackMru
             ? "Most Recently Used"
             : "Most Recently Used - Cannot use unless MRU data is tracked"}

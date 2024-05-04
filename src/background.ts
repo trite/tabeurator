@@ -1,5 +1,7 @@
 import browser from "webextension-polyfill";
 
+import { SortMethod } from "./Shared/SortMethod";
+
 /**
  * Returns all of the registered extension commands for this extension
  * and their shortcut (if active).
@@ -44,7 +46,7 @@ chrome.runtime.onInstalled.addListener((details) => {
     // Extension is installed for the first time, set defaults
     let defaultValues = {
       "track-mru": true,
-      "sort-method": "MostRecentlyUpdated",
+      "sort-method": SortMethod.MostRecentlyUpdated,
       // theme: "dark", // Not used until dark mode override is implemented
     };
     chrome.storage.local.set(defaultValues, function () {
@@ -64,7 +66,7 @@ browser.storage.local
   .get(["track-mru", "sort-method"])
   .then(({ "track-mru": trackMruSetting, "sort-method": sortMethod }) => {
     trackMru = trackMruSetting || false;
-    if (sortMethod !== "MostRecentlyUpdated") {
+    if (sortMethod !== SortMethod.MostRecentlyUpdated) {
       mruOrder = [];
     }
   });
@@ -78,7 +80,7 @@ browser.storage.onChanged.addListener((changes, areaName) => {
 
     if (
       "sort-method" in changes &&
-      changes["sort-method"].newValue !== "MostRecentlyUpdated"
+      changes["sort-method"].newValue !== SortMethod.MostRecentlyUpdated
     ) {
       mruOrder = [];
     }
