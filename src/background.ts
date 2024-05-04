@@ -3,30 +3,6 @@ import browser from "webextension-polyfill";
 import { SortMethod } from "./Shared/SortMethod";
 
 /**
- * Returns all of the registered extension commands for this extension
- * and their shortcut (if active).
- *
- * Since there is only one registered command in this sample extension,
- * the returned `commandsArray` will look like the following:
- *    [{
- *       name: "toggle-feature",
- *       description: "Send a 'toggle-feature' event to the extension"
- *       shortcut: "Ctrl+Shift+U"
- *    }]
- */
-let allCommands = browser.commands.getAll();
-allCommands.then((commands) => {
-  console.log("commands:");
-  for (let command of commands) {
-    // Note that this logs to the Add-on Debugger's console:
-    //   https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Debugging
-    // not the regular Web console.
-    console.log("  " + command.name);
-  }
-  console.log("end of commands");
-});
-
-/**
  * Fired when the user clicks on the browser action
  * or when they press the keyboard shortcut.
  */
@@ -59,16 +35,22 @@ chrome.runtime.onInstalled.addListener((details) => {
 
 // START OF Most Recent Update (MRU) order tracking for tabs (if enabled)
 let mruOrder: number[] = [];
-let trackMru = false;
+let trackMru = true;
 
 // Check the initial settings
 browser.storage.local
   .get(["track-mru", "sort-method"])
   .then(({ "track-mru": trackMruSetting, "sort-method": sortMethod }) => {
     trackMru = trackMruSetting || false;
-    if (sortMethod !== SortMethod.MostRecentlyUpdated) {
-      mruOrder = [];
+    if (trackMru) {
+      browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
+        mruOrder = tabs.map((tab) => tab.id || -1);
+      });
     }
+    // I think this is resetting mruOrder every time the extension is loaded
+    // if (sortMethod !== SortMethod.MostRecentlyUpdated) {
+    //   mruOrder = [];
+    // }
   });
 
 // Update the settings when they change
@@ -78,16 +60,19 @@ browser.storage.onChanged.addListener((changes, areaName) => {
       trackMru = changes["track-mru"].newValue || false;
     }
 
-    if (
-      "sort-method" in changes &&
-      changes["sort-method"].newValue !== SortMethod.MostRecentlyUpdated
-    ) {
-      mruOrder = [];
-    }
+    // I think this will cause the mruOrder to be reset every time the sort method is changed
+    // if (
+    //   "sort-method" in changes &&
+    //   changes["sort-method"].newValue !== SortMethod.MostRecentlyUpdated
+    // ) {
+    //   mruOrder = [];
+    // }
   }
 });
 
 browser.tabs.onActivated.addListener((activeInfo) => {
+  console.log("Before updating MRU order", mruOrder, activeInfo.tabId);
+
   if (trackMru) {
     const index = mruOrder.indexOf(activeInfo.tabId);
     if (index > -1) {
@@ -95,6 +80,8 @@ browser.tabs.onActivated.addListener((activeInfo) => {
     }
     mruOrder.unshift(activeInfo.tabId);
   }
+
+  console.log("After updating MRU order", mruOrder);
 });
 
 // Expose a function to get the MRU order

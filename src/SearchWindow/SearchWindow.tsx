@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useReducer, useEffect, useRef } from "react";
 import {
   Avatar,
   Box,
@@ -21,6 +21,9 @@ import MessagePanel, {
   InfoMessage,
   WarningMessage,
   ErrorMessage,
+  infoMessage,
+  warningMessage,
+  errorMessage,
   Message,
 } from "./MessagePanel";
 
@@ -74,19 +77,100 @@ const ResultsList: React.FC<{
   </List>
 );
 
-const App: React.FC = () => {
-  const [query, setQuery] = useState("");
-  // const [tabs, setTabs] = useState<browser.Tabs.Tab[]>([]);
-  // const [config, setConfig] = useState<any>({});
-  const [focusIndex, setFocusIndex] = useState<number | null>(null);
-  const searchBoxRef = useRef<HTMLInputElement>(null);
-  const [displayedTabs, setDisplayedTabs] = useState<browser.Tabs.Tab[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
+type State = {
+  query: string;
+  focusIndex: number | null;
+  displayedTabs: browser.Tabs.Tab[];
+  messages: Message[];
+  data: {
+    tabs: browser.Tabs.Tab[];
+    config: any;
+  };
+};
 
-  const [data, setData] = useState<{ tabs: browser.Tabs.Tab[]; config: any }>({
+type Action =
+  | { type: "setQuery"; payload: string }
+  | { type: "setFocusIndex"; payload: number | null }
+  | { type: "setDisplayedTabs"; payload: browser.Tabs.Tab[] }
+  | { type: "setMessages"; payload: Message[] }
+  | { type: "setData"; payload: { tabs: browser.Tabs.Tab[]; config: any } };
+
+// Action helpers
+function setQuery(dispatch: React.Dispatch<Action>, query: string): void {
+  dispatch({ type: "setQuery", payload: query });
+}
+
+function setFocusIndex(
+  dispatch: React.Dispatch<Action>,
+  focusIndex: number | null
+): void {
+  dispatch({ type: "setFocusIndex", payload: focusIndex });
+}
+
+function setDisplayedTabs(
+  dispatch: React.Dispatch<Action>,
+  tabs: browser.Tabs.Tab[]
+): void {
+  dispatch({ type: "setDisplayedTabs", payload: tabs });
+}
+
+function setMessages(
+  dispatch: React.Dispatch<Action>,
+  messages: Message[]
+): void {
+  dispatch({ type: "setMessages", payload: messages });
+}
+
+function setData(
+  dispatch: React.Dispatch<Action>,
+  data: {
+    tabs: browser.Tabs.Tab[];
+    config: any;
+  }
+): void {
+  dispatch({ type: "setData", payload: data });
+}
+
+// Define the reducer function
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "setQuery":
+      return { ...state, query: action.payload };
+    case "setFocusIndex":
+      return { ...state, focusIndex: action.payload };
+    case "setDisplayedTabs":
+      return { ...state, displayedTabs: action.payload };
+    case "setMessages":
+      return { ...state, messages: action.payload };
+    case "setData":
+      return { ...state, data: action.payload };
+    // TODO: should probably display a message on the message panel when this happens
+    default:
+      return state;
+  }
+}
+
+// Define the initial state
+const initialState: State = {
+  query: "",
+  focusIndex: null,
+  displayedTabs: [],
+  messages: [],
+  data: {
     tabs: [],
     config: {},
-  });
+  },
+};
+
+const App: React.FC = () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const searchBoxRef = useRef<HTMLInputElement>(null);
+
+  const getCurrentTab = () => {
+    return browser.tabs
+      .query({ active: true, currentWindow: true })
+      .then((tabs) => tabs[0]);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -95,8 +179,13 @@ const App: React.FC = () => {
       const mruOrder = await browser.runtime.sendMessage({
         type: "getMruOrder",
       });
-      setData({
-        tabs: allTabs,
+      const currentTab = await getCurrentTab();
+
+      // filter out the current tab from the list
+      const allOtherTabs = allTabs.filter((tab) => tab.id !== currentTab.id);
+
+      setData(dispatch, {
+        tabs: allOtherTabs,
         config: { sortOrder: result["sort-method"], mruOrder },
       });
     };
@@ -104,58 +193,57 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    console.log("Sort order:", data.config.sortOrder);
-    console.log("MRU order:", data.config.mruOrder);
+    console.log("Sort order:", state.data.config.sortOrder);
+    console.log("MRU order:", state.data.config.mruOrder);
 
-    let processedTabs = [...data.tabs];
+    let processedTabs = [...state.data.tabs];
 
     console.log(
       "Tabs before sorting:",
-      processedTabs.map((tab) => tab.title)
+      processedTabs.map((tab) => tab.id)
     );
 
-    if (data.config.sortOrder === SortMethod.Alphabetical) {
+    if (state.data.config.sortOrder === SortMethod.Alphabetical) {
       processedTabs.sort((a, b) => a.title?.localeCompare(b.title || "") || 0);
-    } else if (data.config.sortOrder === SortMethod.MostRecentlyUpdated) {
-      if (data.config.mruOrder.length > 0) {
+    } else if (state.data.config.sortOrder === SortMethod.MostRecentlyUpdated) {
+      if (state.data.config.mruOrder.length > 0) {
         processedTabs.sort((a, b) => {
-          const indexA = data.config.mruOrder.indexOf(a.id);
-          const indexB = data.config.mruOrder.indexOf(b.id);
+          const indexA = state.data.config.mruOrder.indexOf(a.id);
+          const indexB = state.data.config.mruOrder.indexOf(b.id);
           if (indexA === -1 && indexB === -1) return 0;
           else if (indexA === -1) return 1;
           else if (indexB === -1) return -1;
-          else return indexB - indexA;
+          else return indexA - indexB;
         });
       } else {
         setMessages(
-          messages.concat({
-            type: "Warning",
-            message:
-              "Most Recently Updated sort method is enabled, but no tabs have been visited yet.",
-            resolution: "Visit at least 1 tab to populate the MRU order.",
-          })
+          dispatch,
+          state.messages.concat(
+            warningMessage({
+              message:
+                "Most Recently Updated sort method is enabled, but no tabs have been visited yet.",
+              resolution: "Visit at least 1 tab to populate the MRU order.",
+            })
+          )
         );
-        // Raise a notification to the UI that MRU order is not yet populated
-        // Maybe have it explain that this happens on first install
-        //   until you visit at least 1 tab
       }
     }
 
     console.log(
       "Tabs after sorting:",
-      processedTabs.map((tab) => tab.title)
+      processedTabs.map((tab) => tab.id)
     );
 
-    if (query !== "") {
+    if (state.query !== "") {
       const fuse = new Fuse(processedTabs, {
         keys: ["title"],
-        shouldSort: data.config.sortOrder === SortMethod.FuzzySearchScore,
+        shouldSort: state.data.config.sortOrder === SortMethod.FuzzySearchScore,
       });
-      processedTabs = fuse.search(query).map((result) => result.item);
+      processedTabs = fuse.search(state.query).map((result) => result.item);
     }
 
-    setDisplayedTabs(processedTabs);
-  }, [data, query]);
+    setDisplayedTabs(dispatch, processedTabs);
+  }, [state.data, state.query]);
 
   // Check if the user prefers dark mode
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -177,14 +265,14 @@ const App: React.FC = () => {
   const handleSearchBoxKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      setFocusIndex(0);
+      setFocusIndex(dispatch, 0);
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
-      setFocusIndex(data.tabs.length - 1);
+      setFocusIndex(dispatch, state.data.tabs.length - 1);
     } else if (event.key === "Enter") {
       event.preventDefault();
-      if (data.tabs.length > 0) {
-        switchToTab(data.tabs[0].id!);
+      if (state.data.tabs.length > 0) {
+        switchToTab(state.data.tabs[0].id!);
       }
     }
   };
@@ -193,19 +281,27 @@ const App: React.FC = () => {
     if (event.key === "ArrowDown") {
       event.preventDefault();
       setFocusIndex(
-        focusIndex === null || focusIndex >= data.tabs.length - 1
+        dispatch,
+        state.focusIndex === null ||
+          state.focusIndex >= state.data.tabs.length - 1
           ? null
-          : focusIndex + 1
+          : state.focusIndex + 1
       );
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
       setFocusIndex(
-        focusIndex === null || focusIndex <= 0 ? null : focusIndex - 1
+        dispatch,
+        state.focusIndex === null || state.focusIndex <= 0
+          ? null
+          : state.focusIndex - 1
       );
     } else if (event.key === "Enter") {
       event.preventDefault();
-      if (focusIndex !== null && focusIndex < data.tabs.length) {
-        switchToTab(data.tabs[focusIndex].id!);
+      if (
+        state.focusIndex !== null &&
+        state.focusIndex < state.data.tabs.length
+      ) {
+        switchToTab(state.data.tabs[state.focusIndex].id!);
       }
     }
   };
@@ -215,14 +311,14 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    if (focusIndex === null) {
+    if (state.focusIndex === null) {
       setTimeout(() => {
         searchBoxRef.current?.focus();
       }, 50);
     } else {
-      document.getElementById(`listItem-${focusIndex}`)?.focus();
+      document.getElementById(`listItem-${state.focusIndex}`)?.focus();
     }
-  }, [focusIndex]);
+  }, [state.focusIndex]);
 
   return (
     <Box width={800}>
@@ -230,14 +326,14 @@ const App: React.FC = () => {
         <CssBaseline />
         <StyledBox>
           <SearchBox
-            query={query}
-            onQueryChange={setQuery}
+            query={state.query}
+            onQueryChange={(newQuery) => setQuery(dispatch, newQuery)}
             onKeyDown={handleSearchBoxKeyDown}
             inputRef={searchBoxRef}
           />
-          <MessagePanel messages={messages} />
+          <MessagePanel messages={state.messages} />
           <ResultsList
-            tabs={displayedTabs}
+            tabs={state.displayedTabs}
             onKeyDown={handleListItemKeyDown}
             onListItemClick={handleListItemClick}
           />
