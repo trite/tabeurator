@@ -6,6 +6,10 @@ module.exports = {
   mode: 'development',
   watch: true,
   devtool: 'source-map',
+  // No need to minify a browser extension and it complicates the submission process
+  optimization: {
+    minimize: false
+  },
   entry: {
     background: './src/background.ts',
     searchWindow: './src/searchWindow.tsx',
