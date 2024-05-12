@@ -8,13 +8,25 @@ import * as Chrome from "./Shared/Chrome";
  * Fired when the user clicks on the browser action
  * or when they press the keyboard shortcut.
  */
-chrome.action.onClicked.addListener((tab) => {
-  Logger.logDebug("Opening search box");
-  chrome.action.setPopup({
-    tabId: tab.id,
-    popup: "searchWindow.html",
+if (typeof chrome !== "undefined" && chrome.action) {
+  // Chrome, Edge, or any Chromium-based browsers
+  chrome.action.onClicked.addListener((tab) => {
+    chrome.action.setPopup({
+      tabId: tab.id,
+      popup: "searchWindow.html",
+    });
   });
-});
+} else if (typeof browser !== "undefined" && browser.browserAction) {
+  // Firefox with Manifest V2
+  browser.browserAction.onClicked.addListener((tab) => {
+    browser.browserAction.setPopup({
+      tabId: tab.id,
+      popup: "searchWindow.html",
+    });
+  });
+} else {
+  console.error("No suitable action API found!");
+}
 
 // Set storage defaults
 chrome.runtime.onInstalled.addListener((details) => {
