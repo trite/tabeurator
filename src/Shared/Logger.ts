@@ -9,8 +9,10 @@ enum Level {
   // Error = "error",
 }
 
-// TODO: Make this configurable
-const logLevel = Level.Debug;
+// TODO: Make this configurable outside of the code
+// The `as Level` is a workaround necessary for this goofy setup,
+//   will go away when the value is configurable
+const logLevel = Level.Off as Level;
 
 export const logDebug = (message?: any, ...optionalParams: any[]): void => {
   if (logLevel === Level.Debug) {
