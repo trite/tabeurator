@@ -1,9 +1,15 @@
+# Manifest version specific artifact folders:
+# v2, firefox
+dist-firefox/
+# v3, chrome
+dist-chrome/
+
+# This will matter again some day, but not yet (manifest v2 vs v3 and firefox vs chrome stuff):
 dist/
 
 ########################################
-# Firefox extension initial .gitignore #
+# Web extension initial .gitignore #
 ########################################
-
 
 # Logs
 logs

@@ -35,9 +35,25 @@ For performing bundling, not sure if this really even needs to be a separate com
 - Chrome: `bundle:chrome`
 - Firefox: `bundle:firefox`
 
+## Package-only
+
+Exists as its own command largely for debugging purposes, generally shouldn't be run by itself unless you're testing something specific to the packaging process and don't want to re-run bundling every time (since bundling takes way longer than packaging right now).
+
 ## Package
 
-Run the bundle step and then package the contents for distribution. Contents will end up in a folder inside of `dist`:
+Run the bundle step and then then package-only steps for a particular distribution. Artifacts will end up in a `dist-{browser}` folder:
 
-- Chrome: `bundle:chrome`
-- Firefox: `bundle:firefox`
+- Chrome: `package:chrome`
+  - Artifacts: `dist-chrome`
+- Firefox: `package:firefox`
+  - Artifacts: `dist-firefox`
+
+There's also a `package:both` command to bundle and package for both browsers. When using this command the respective output packages will be in `dist-{browser}`.
+
+## Clean
+
+Remove build artifacts (`dist-{browser}` folders).
+
+## Hard-reset
+
+Run `clean` and then remove node_modules. A `npm install` will be needed before work can resume.

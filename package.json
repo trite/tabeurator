@@ -73,10 +73,15 @@
     "build:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode development",
     "watch:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode development --watch",
     "watch:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode development --watch",
-    "bundle:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode production",
-    "bundle:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode production",
-    "package:chrome": "npm run bundle:chrome && cd dist && web-ext build",
-    "package:firefox": "npm run bundle:firefox && cd dist && web-ext build"
+    "bundle:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode production --output-path dist-chrome",
+    "bundle:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode production --output-path dist-firefox",
+    "package-only:chrome": "cd dist-chrome && web-ext build",
+    "package-only:firefox": "cd dist-firefox && web-ext build",
+    "package:chrome": "npm run bundle:chrome && npm run package-only:chrome",
+    "package:firefox": "npm run bundle:firefox && npm run package-only:firefox",
+    "package:both": "npm run package:chrome && npm run package:firefox",
+    "clean": "rm -rf dist-chrome dist-firefox",
+    "hard-reset": "npm run clean && rm -rf node_modules"
   },
   "eslintConfig": {
     "extends": [
