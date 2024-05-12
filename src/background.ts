@@ -8,13 +8,12 @@ import * as Chrome from "./Shared/Chrome";
  * Fired when the user clicks on the browser action
  * or when they press the keyboard shortcut.
  */
-browser.browserAction.onClicked.addListener((tab) => {
+chrome.action.onClicked.addListener((tab) => {
   Logger.logDebug("Opening search box");
-  browser.browserAction.setPopup({
+  chrome.action.setPopup({
     tabId: tab.id,
     popup: "searchWindow.html",
   });
-  browser.browserAction.openPopup();
 });
 
 // Set storage defaults
