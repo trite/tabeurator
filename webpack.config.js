@@ -8,7 +8,6 @@ const targetBrowser = process.env.TARGET_BROWSER;
 
 module.exports = {
   mode: 'development',
-  watch: true,
   devtool: 'source-map',
   optimization: {
     minimize: false

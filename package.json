@@ -74,7 +74,9 @@
     "watch:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode development --watch",
     "watch:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode development --watch",
     "bundle:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode production",
-    "bundle:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode production"
+    "bundle:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode production",
+    "package:chrome": "npm run bundle:chrome && cd dist && web-ext build",
+    "package:firefox": "npm run bundle:firefox && cd dist && web-ext build"
   },
   "eslintConfig": {
     "extends": [
