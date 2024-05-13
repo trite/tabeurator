@@ -62,6 +62,20 @@ For chrome browsers, shortcuts must be changed in `chrome://extensions/shortcuts
 
 For firefox, shortcuts can be changed in the extension settings.
 
+# Building from source
+
+For anyone who wants to build the extension from source, as well as for Firefox's addon review team, here are the steps to build this project:
+
+- Install dependencies with `npm install`
+- Build, bundle, and package everything:
+  - Firefox: `npm run package:firefox`
+  - Chrome: `npm run package:chrome`
+  - Both: `npm run package:both`
+- Resulting files will end up in:
+  - `dist-firefox` for manifest v2 version (meant for Firefox currently)
+  - `dist-chrome` for manifest v3 version (meant for Chrome currently)
+- Resulting files contain both the raw files and a zipped up copy. The zipped copy will be in a subfolder called `web-ext-artifacts`
+
 # Working notes
 
 TODOs, planned features, and possible features.
