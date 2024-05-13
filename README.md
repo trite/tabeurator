@@ -1,5 +1,13 @@
 # Tabeurator
 
+Tabeurator is an extension for Firefox, Chrome, and probably other browsers at some point, to make it easier to manage your tabs.
+
+This started because I've long since been annoyed with tab management in most browsers. So this extension was started with the following mission/goal:
+
+## Mission/Goal
+
+**Quickly, easily, and ergonomically find tabs and switch to them.**
+
 ## Quirks/Issues
 
 This project is in a VERY EARLY state right now. I have only spent a few hours so far putting this all together, and there is a lot of room for improvement.
@@ -26,9 +34,11 @@ Please submit any issue requests or bug reports at [https://github.com/trite/tab
 
 ### Chrome/Firefox and Manifest v3/v2
 
-As of 2024-05-12 Firefox doesn't yet support everything I need in manifest v3, and Chrome throws deprecation warnings if using manifest v2. So for now the build process is bifurcated: there are `build:firefox`, `build:chrome`, and similar duplicates for various commands specific to each manifest. Naming them against Chrome/Firefox instead of v2/v3 is to keep development life easier as I test features out in each browser... But if later supporting more browsers that'll need to change most likely.
+As of 2024-05-12 Firefox doesn't yet support everything Tabeurator needs in manifest v3, and Chrome throws deprecation warnings if using manifest v2. So for now the build process is bifurcated: there are `build:firefox`, `build:chrome`, and similar duplicates for various commands specific to each manifest. Naming them against Chrome/Firefox instead of v2/v3 is to keep development life easier as I test features out in each browser... But if later supporting more browsers that'll need to change most likely.
 
 Eventually this should all be able to work on manifest v3, once Firefox finishes implementing support for it.
+
+More info can be found in the CONTRIBUTING.md file.
 
 ## Shortcuts
 
@@ -38,34 +48,40 @@ Mac default hotkeys use CTRL instead of CMD because I want to use `Ctrl+Space` a
 
 #### Open search pane
 
-The search pane can be opened by default with `Ctrl+Space` (on all OSes).
+The search pane can be opened by default with `Ctrl+Space` (on all browsers).
 
 #### Previous tab
 
-If the `Most Recently Visited (MRV)` option is enabled then most recently visited tabs are tracked (poorly, just using tab id's for now). Using `Ctrl+Shift+Space` (on all OSes) will navigate to the most recently visited tab.
+If the `Most Recently Visited (MRV)` option is enabled then most recently visited tabs are tracked (poorly, just using tab id's for now). Using `Ctrl+Shift+Space` (on all browsers) will navigate to the most recently visited tab.
 
 ### Configuring Shortcuts
 
 Open the extension options dialog and update it there. Currently only the search box hotkey is configurable, previous tab hotkey will be soon.
 
+For chrome browsers, shortcuts must be changed in `chrome://extensions/shortcuts`.
+
+For firefox, shortcuts can be changed in the extension settings.
+
 # Working notes
+
+TODOs, planned features, and possible features.
 
 ## TODO
 
-- [ ] Figure out better fuzzy search settings, there's lots to work with but just need to sit down and take the time
 - [x] Jump to previous tab via shortcut
+- [ ] Figure out better fuzzy search settings, there's lots to work with but just need to sit down and take the time
 - [ ] Change filtering in search box on the fly via keyword or key character
 - [ ] Check Fuse.js docs to see if there's any option for things like hard filtering
   - [ ] Might be something [here](https://www.fusejs.io/api/options.html#useextendedsearch)
-- [ ] Will the current method have issues when tabs are reordered? Might need to see if there's a unique ID that follows tabs around when they are reordered.
+- [ ] Will the current method for tracking `Most Recently Viewed (MRV)` have issues when tabs are reordered? It is just an array of tab id's that gets updated as new tab id's are visited, but these seem like they might be fragile id's (does the user re-ordering tabs affect this value?). Might need to see if there's a unique ID that follows tabs around when they are reordered.
 - [ ] Better window switching support: still need to get the previous tab shortcut to work with it and doesn't yet capture when moving to a window without also changing tabs, which kind of messes with the goal of last tab meaning last tab viewed (focused)?
 - [ ] Better window support: options to limit searching to current window or specific window(s)
 - [ ] Add hotkey configuration support for previous tab action
 - [ ] Search popup should always be scrolled to top on opening
-- [ ] Add sidebar version that doesn't need to be popped up with a hotkey (or maybe then the hotkey controls opening/closing the sidebar?)
 - [ ] Popup sometimes takes multiple presses of hotkey to be summoned.
 - [ ] Some websites don't play nicely with the `Ctrl+Space` and/or `Ctrl+Shift+Space` hotkeys.
 
 ## Maybe
 
 - [ ] Jump to X tabs ago via shortcut (limited by the MRV list length, only available if MRV is enabled)
+- [ ] Add sidebar version that doesn't need to be popped up with a hotkey (or maybe then the hotkey controls opening/closing the sidebar?)
