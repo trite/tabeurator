@@ -81,7 +81,10 @@
     "package:firefox": "npm run bundle:firefox && npm run package-only:firefox",
     "package:both": "npm run package:chrome && npm run package:firefox",
     "clean": "rm -rf dist-chrome dist-firefox",
-    "hard-reset": "npm run clean && rm -rf node_modules"
+    "hard-reset": "npm run clean && rm -rf node_modules",
+    "increment:major": "node scripts/increment-version.js major",
+    "increment:minor": "node scripts/increment-version.js minor",
+    "increment:rev": "node scripts/increment-version.js revision"
   },
   "eslintConfig": {
     "extends": [
