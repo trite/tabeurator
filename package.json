@@ -69,12 +69,22 @@
     "workbox-webpack-plugin": "^6.4.1"
   },
   "scripts": {
-    "build:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode development",
-    "build:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode development",
-    "watch:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode development --watch",
-    "watch:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode development --watch",
-    "bundle:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode production",
-    "bundle:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode production"
+    "build:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode development --output-path dist-chrome",
+    "build:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode development --output-path dist-firefox",
+    "watch:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode development --watch --output-path dist-chrome",
+    "watch:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode development --watch --output-path dist-firefox",
+    "bundle:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode production --output-path dist-chrome",
+    "bundle:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode production --output-path dist-firefox",
+    "package-only:chrome": "cd dist-chrome && web-ext build",
+    "package-only:firefox": "cd dist-firefox && web-ext build",
+    "package:chrome": "npm run bundle:chrome && npm run package-only:chrome",
+    "package:firefox": "npm run bundle:firefox && npm run package-only:firefox",
+    "package:both": "npm run package:chrome && npm run package:firefox",
+    "clean": "rm -rf dist-chrome dist-firefox",
+    "hard-reset": "npm run clean && rm -rf node_modules",
+    "increment:major": "node scripts/increment-version.js major",
+    "increment:minor": "node scripts/increment-version.js minor",
+    "increment:rev": "node scripts/increment-version.js revision"
   },
   "eslintConfig": {
     "extends": [
@@ -100,6 +110,7 @@
     "copy-webpack-plugin": "^12.0.2",
     "cross-env": "^7.0.3",
     "ts-loader": "^9.5.1",
+    "web-ext": "^7.11.0",
     "webpack": "^5.91.0",
     "webpack-cli": "^5.1.4"
   },

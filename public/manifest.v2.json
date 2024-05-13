@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Tabeurator",
-  "version": "0.1",
+  "version": "0.1.1",
   "description": "Simplifying Tab Search and Navigation",
   "icons": {
     "48": "tabeurator-48.png",

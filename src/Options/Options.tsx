@@ -1,10 +1,58 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, ChangeEvent, MouseEvent } from "react";
 import browser from "webextension-polyfill";
 
 import { SortMethod } from "../Shared/SortMethod";
+import { BrowserType, getBrowserType } from "../Shared/Chrome";
 
 const commandName = "_execute_browser_action";
 const defaultShortcut = "Ctrl+Shift+Space";
+
+interface ShortcutComponentProps {
+  shortcut: string;
+  setShortcut: (value: string) => void;
+  updateShortcut: (event: MouseEvent<HTMLButtonElement>) => void;
+  resetShortcut: (event: MouseEvent<HTMLButtonElement>) => void;
+}
+
+const ShortcutComponent: React.FC<ShortcutComponentProps> = ({
+  shortcut,
+  setShortcut,
+  updateShortcut,
+  resetShortcut,
+}) => {
+  switch (getBrowserType()) {
+    case BrowserType.Chrome:
+      return (
+        <p>
+          Keyboard shortcuts for Chrome browsers must be set at:
+          chrome://extensions/shortcuts
+        </p>
+      );
+    case BrowserType.Firefox:
+    case BrowserType.Unknown:
+    default:
+      // For now assume all non-chrome browsers can set shortcuts
+      return (
+        <>
+          <label htmlFor="shortcut">Keyboard shortcut</label>
+          <input
+            type="text"
+            id="shortcut"
+            value={shortcut}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setShortcut(e.target.value)
+            }
+          />
+          <button type="button" onClick={updateShortcut}>
+            Update keyboard shortcut
+          </button>
+          <button type="button" onClick={resetShortcut}>
+            Reset keyboard shortcut
+          </button>
+        </>
+      );
+  }
+};
 
 const Options = () => {
   const [shortcut, setShortcut] = useState("");
@@ -33,6 +81,7 @@ const Options = () => {
   }, []);
 
   const updateShortcut = async () => {
+    // console.log("updateShortcut", shortcut);
     await browser.commands.update({
       name: commandName,
       shortcut: shortcut,
@@ -64,19 +113,12 @@ const Options = () => {
 
   return (
     <form>
-      <label htmlFor="shortcut">Keyboard shortcut</label>
-      <input
-        type="text"
-        id="shortcut"
-        value={shortcut}
-        onChange={(e) => setShortcut(e.target.value)}
+      <ShortcutComponent
+        shortcut={shortcut}
+        setShortcut={setShortcut}
+        updateShortcut={updateShortcut}
+        resetShortcut={resetShortcut}
       />
-      <button type="button" onClick={updateShortcut}>
-        Update keyboard shortcut
-      </button>
-      <button type="button" onClick={resetShortcut}>
-        Reset keyboard shortcut
-      </button>
 
       <br />
 
