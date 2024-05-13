@@ -49,6 +49,7 @@ module.exports = {
         { from: `public/manifest.${targetBrowser}.json`, to: 'manifest.json' },
         { from: 'public/tabeurator-48.png', to: 'tabeurator-48.png' },
         { from: 'public/tabeurator-96.png', to: 'tabeurator-96.png' },
+        { from: 'public/tabeurator-128.png', to: 'tabeurator-128.png' },
         { from: 'public/tabeurator-1024.png', to: 'tabeurator-1024.png' }
       ]
     }),
