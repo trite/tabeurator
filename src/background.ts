@@ -2,30 +2,33 @@ import browser from "webextension-polyfill";
 
 import { SortMethod } from "./Shared/SortMethod";
 import * as Logger from "./Shared/Logger";
-import * as Chrome from "./Shared/Chrome";
+import { BrowserType, getBrowserType, switchToTab } from "./Shared/Chrome";
 
 /**
  * Fired when the user clicks on the browser action
  * or when they press the keyboard shortcut.
  */
-if (typeof chrome !== "undefined" && chrome.action) {
-  // Chrome, Edge, or any Chromium-based browsers
-  chrome.action.onClicked.addListener((tab) => {
-    chrome.action.setPopup({
-      tabId: tab.id,
-      popup: "searchWindow.html",
+switch (getBrowserType()) {
+  case BrowserType.Chrome:
+    chrome.action.onClicked.addListener((tab) => {
+      chrome.action.setPopup({
+        tabId: tab.id,
+        popup: "searchWindow.html",
+      });
     });
-  });
-} else if (typeof browser !== "undefined" && browser.browserAction) {
-  // Firefox with Manifest V2
-  browser.browserAction.onClicked.addListener((tab) => {
-    browser.browserAction.setPopup({
-      tabId: tab.id,
-      popup: "searchWindow.html",
+    break;
+  case BrowserType.Firefox:
+    browser.browserAction.onClicked.addListener((tab) => {
+      browser.browserAction.setPopup({
+        tabId: tab.id,
+        popup: "searchWindow.html",
+      });
     });
-  });
-} else {
-  console.error("No suitable action API found!");
+    break;
+  case BrowserType.Unknown:
+  default:
+    console.error("No suitable action API found for `onClicked` event!");
+    break;
 }
 
 // Set storage defaults
@@ -105,7 +108,7 @@ browser.commands.onCommand.addListener((command) => {
       Logger.logDebug(
         "Navigating to previous tab (tab id: " + mrvOrder[0] + ")"
       );
-      Chrome.switchToTab(mrvOrder[1]);
+      switchToTab(mrvOrder[1]);
     } else {
       Logger.logDebug("No previous tabs to navigate to");
     }

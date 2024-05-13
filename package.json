@@ -69,10 +69,10 @@
     "workbox-webpack-plugin": "^6.4.1"
   },
   "scripts": {
-    "build:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode development",
-    "build:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode development",
-    "watch:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode development --watch",
-    "watch:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode development --watch",
+    "build:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode development --output-path dist-chrome",
+    "build:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode development --output-path dist-firefox",
+    "watch:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode development --watch --output-path dist-chrome",
+    "watch:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode development --watch --output-path dist-firefox",
     "bundle:chrome": "cross-env TARGET_BROWSER=v3 webpack --mode production --output-path dist-chrome",
     "bundle:firefox": "cross-env TARGET_BROWSER=v2 webpack --mode production --output-path dist-firefox",
     "package-only:chrome": "cd dist-chrome && web-ext build",
