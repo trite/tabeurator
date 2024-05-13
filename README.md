@@ -64,7 +64,9 @@ For firefox, shortcuts can be changed in the extension settings.
 
 # Building from source
 
-For anyone who wants to build the extension from source, as well as for Firefox's addon review team, here are the steps to build this project:
+For anyone who wants to build the extension from source, as well as for Firefox's addon review team, here are the steps to build this project.
+
+**NOTE:** I perform this build on a Windows 11 machine, but have tried to keep things environment agnostic.
 
 - Install dependencies with `npm install`
 - Build, bundle, and package everything:
