@@ -31,10 +31,9 @@ import { switchToTab } from "../Shared/Chrome";
 
 // Define a styled component using Emotion
 const StyledBox = styled(Box)({
-  borderRadius: "10px",
-  // padding: "5px",
-  padding: "0px",
-  margin: "5px",
+  borderRadius: "0.5em",
+  padding: "0.25em",
+  margin: 0,
 });
 
 const SearchBox: React.FC<{
@@ -64,17 +63,13 @@ const ResultsList: React.FC<{
         id={`listItem-${index}`}
         onClick={() => onListItemClick(tab)}
         sx={{
-          // borderRadius: 1,
-          // borderColor: "white",
-          // border: 1,
-          // margin: 1,
-          padding: 0.25,
+          padding: "0.1em",
           margin: 0,
         }}
       >
         <ListItemAvatar
           sx={{
-            padding: 0.75,
+            padding: "0.5em",
             margin: 0,
             minWidth: 0,
             maxWidth: 100,
@@ -85,19 +80,25 @@ const ResultsList: React.FC<{
             // TODO: Return Tabeurator favicon (or something else) instead of empty string
             src={tab.favIconUrl?.startsWith("chrome://") ? "" : tab.favIconUrl}
             sx={{
-              width: 24,
-              height: 24,
+              width: "2em",
+              height: "2em",
               margin: 0,
               padding: 0,
               maxWidth: 100,
               minWidth: 0,
-              // borderRadius: 0,
-              // border: 1,
-              // borderColor: "white",
             }}
           />
         </ListItemAvatar>
-        <ListItemText primary={tab.title} sx={{ padding: 0.75, margin: 0 }} />
+        <ListItemText
+          primary={tab.title}
+          sx={{
+            // padding: "0.1em 0.5em 0.1em 0.5em", // top, right, bottom, left
+            padding: "0.1em 0.5em", // top/bottom, right/left
+            margin: 0,
+            overflow: "hidden",
+            maxHeight: "3em",
+          }}
+        />
       </ListItemButton>
     ))}
   </List>
