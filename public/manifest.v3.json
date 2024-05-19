@@ -15,7 +15,8 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_icon": "tabeurator-48.png"
+    "default_icon": "tabeurator-48.png",
+    "default_popup": "sidebar.html"
   },
   "commands": {
     "_execute_action": {
@@ -34,14 +35,11 @@
     },
     "toggle_sidebar": {
       "suggested_key": {
-        "default": "Ctrl+Alt+Space",
-        "mac": "MacCtrl+Alt+Space"
+        "default": "Ctrl+Shift+U",
+        "mac": "MacCtrl+Shift+U"
       },
       "description": "Toggle Sidebar"
     }
-  },
-  "sidebar_action": {
-    "default_panel": "sidebar.html"
   },
   "options_ui": {
     "page": "optionsPane.html",
