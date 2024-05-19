@@ -97,6 +97,11 @@ TODOs, planned features, and possible features.
 - [ ] Popup sometimes takes multiple presses of hotkey to be summoned.
 - [ ] Some websites don't play nicely with the `Ctrl+Space` and/or `Ctrl+Shift+Space` hotkeys.
 - [ ] Sidebar has to be closed and reopened to clear messages that are no longer needed. Technically search window only gets this by virtue of being built up from scratch each time. Cause is lack of using `removeMessages` function in both components.
+- [ ] Show if a tab is pinned
+- [ ] Add filtering/sorting options for pinned tabs (pinned tabs only, non-pinned only, all)
+- [ ] Since hotkeys seem flaky sometimes it might be worth moving search from the popup/sidebar to the OmniBox (URL bar).
+  - [ ] Might be able to have the omnibox search update a value in local storage that both the sidebar and popup could then use to filter.
+  - [ ] Opens up the option of removing the search box from popup/sidebar or making a config value that can hide it
 
 ## Maybe
 
