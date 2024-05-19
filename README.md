@@ -96,8 +96,8 @@ TODOs, planned features, and possible features.
 - [ ] Search popup should always be scrolled to top on opening
 - [ ] Popup sometimes takes multiple presses of hotkey to be summoned.
 - [ ] Some websites don't play nicely with the `Ctrl+Space` and/or `Ctrl+Shift+Space` hotkeys.
+- [ ] Sidebar has to be closed and reopened to clear messages that are no longer needed. Technically search window only gets this by virtue of being built up from scratch each time. Cause is lack of using `removeMessages` function in both components.
 
 ## Maybe
 
 - [ ] Jump to X tabs ago via shortcut (limited by the MRV list length, only available if MRV is enabled)
-- [ ] Add sidebar version that doesn't need to be popped up with a hotkey (or maybe then the hotkey controls opening/closing the sidebar?)
