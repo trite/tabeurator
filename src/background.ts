@@ -97,6 +97,9 @@ browser.runtime.onMessage.addListener(
 );
 // END OF Most Recent Version (MRV) order tracking for tabs
 
+// TODO: Probably want to use the actual sidebar state in the long term
+let isSidebarOpen = false;
+
 /**
  * Fired when a registered command is activated using a keyboard shortcut.
  */
@@ -112,6 +115,13 @@ browser.commands.onCommand.addListener((command) => {
     } else {
       Logger.logDebug("No previous tabs to navigate to");
     }
+  } else if (command === "toggle_sidebar") {
+    if (isSidebarOpen) {
+      browser.sidebarAction.close();
+    } else {
+      browser.sidebarAction.open();
+    }
+    isSidebarOpen = !isSidebarOpen;
   } else {
     Logger.logDebug("Command not found: ", command);
   }

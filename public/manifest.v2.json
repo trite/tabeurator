@@ -33,7 +33,17 @@
         "mac": "MacCtrl+Shift+Space"
       },
       "description": "Go To Previous Tab (Most Recently Visited)"
+    },
+    "toggle_sidebar": {
+      "suggested_key": {
+        "default": "Ctrl+Alt+Space",
+        "mac": "MacCtrl+Alt+Space"
+      },
+      "description": "Toggle Sidebar"
     }
+  },
+  "sidebar_action": {
+    "default_panel": "sidebar.html"
   },
   "options_ui": {
     "page": "optionsPane.html",

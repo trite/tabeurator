@@ -31,12 +31,12 @@ import { switchToTab } from "../Shared/Chrome";
 
 // Define a styled component using Emotion
 const StyledBox = styled(Box)({
-  borderRadius: "5px",
-  padding: "10px",
-  margin: "10px",
+  borderRadius: "10px",
+  // padding: "5px",
+  padding: "0px",
+  margin: "5px",
 });
 
-// Define the SearchBox component
 const SearchBox: React.FC<{
   query: string;
   onQueryChange: (newQuery: string) => void;
@@ -52,7 +52,6 @@ const SearchBox: React.FC<{
   />
 );
 
-// Define the ResultsList component
 const ResultsList: React.FC<{
   tabs: browser.Tabs.Tab[];
   onKeyDown: (event: React.KeyboardEvent) => void;
@@ -64,13 +63,29 @@ const ResultsList: React.FC<{
         key={index}
         id={`listItem-${index}`}
         onClick={() => onListItemClick(tab)}
+        sx={{
+          // borderRadius: 1,
+          // borderColor: "white",
+          // border: 1,
+          // margin: 1,
+          padding: 0,
+          margin: 1,
+        }}
       >
         <ListItemAvatar>
           <Avatar
             alt=""
             // TODO: Return Tabeurator favicon (or something else) instead of empty string
             src={tab.favIconUrl?.startsWith("chrome://") ? "" : tab.favIconUrl}
-            sx={{ width: 24, height: 24 }}
+            sx={{
+              width: 24,
+              height: 24,
+              // borderRadius: 0,
+              // border: 1,
+              // borderColor: "white",
+              // margin: 0,
+              // padding: 0,
+            }}
           />
         </ListItemAvatar>
         <ListItemText primary={tab.title} />
@@ -141,7 +156,6 @@ const setData = (
   dispatch({ type: "setData", payload: data });
 };
 
-// Define the reducer function
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "setQuery":
@@ -176,7 +190,6 @@ const reducer = (state: State, action: Action): State => {
   }
 };
 
-// Define the initial state
 const initialState: State = {
   query: "",
   focusIndex: null,
@@ -344,7 +357,7 @@ const App: React.FC = () => {
   }, [state.focusIndex]);
 
   return (
-    <Box width={800}>
+    <Box>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <StyledBox>

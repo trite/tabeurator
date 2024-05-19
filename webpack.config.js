@@ -15,7 +15,8 @@ module.exports = {
   entry: {
     background: './src/background.ts',
     searchWindow: './src/searchWindow.tsx',
-    optionsPane: './src/optionsPane.tsx'
+    optionsPane: './src/optionsPane.tsx',
+    sidebar: './src/sidebar.tsx',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -43,6 +44,11 @@ module.exports = {
       template: './public/optionsPane.html',
       filename: 'optionsPane.html',
       chunks: ['optionsPane']
+    }),
+    new HtmlWebpackPlugin({
+      template: './public/sidebar.html',
+      filename: 'sidebar.html',
+      chunks: ['sidebar']
     }),
     new CopyWebpackPlugin({
       patterns: [
