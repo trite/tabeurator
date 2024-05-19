@@ -68,11 +68,18 @@ const ResultsList: React.FC<{
           // borderColor: "white",
           // border: 1,
           // margin: 1,
-          padding: 0,
-          margin: 1,
+          padding: 0.25,
+          margin: 0,
         }}
       >
-        <ListItemAvatar>
+        <ListItemAvatar
+          sx={{
+            padding: 0.75,
+            margin: 0,
+            minWidth: 0,
+            maxWidth: 100,
+          }}
+        >
           <Avatar
             alt=""
             // TODO: Return Tabeurator favicon (or something else) instead of empty string
@@ -80,15 +87,17 @@ const ResultsList: React.FC<{
             sx={{
               width: 24,
               height: 24,
+              margin: 0,
+              padding: 0,
+              maxWidth: 100,
+              minWidth: 0,
               // borderRadius: 0,
               // border: 1,
               // borderColor: "white",
-              // margin: 0,
-              // padding: 0,
             }}
           />
         </ListItemAvatar>
-        <ListItemText primary={tab.title} />
+        <ListItemText primary={tab.title} sx={{ padding: 0.75, margin: 0 }} />
       </ListItemButton>
     ))}
   </List>
