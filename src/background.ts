@@ -4,20 +4,26 @@ import { SortMethod } from "./Shared/SortMethod";
 import * as Logger from "./Shared/Logger";
 import { BrowserType, getBrowserType, switchToTab } from "./Shared/Chrome";
 
-/**
- * Fired when the user clicks on the browser action
- * or when they press the keyboard shortcut.
- */
+// Browser-specific initializations
 switch (getBrowserType()) {
   case BrowserType.Chrome:
+    // Display the popup when the action toolbar icon is clicked
     chrome.action.onClicked.addListener((tab) => {
       chrome.action.setPopup({
         tabId: tab.id,
         popup: "searchWindow.html",
       });
     });
+
+    // Allows users to open the side panel by clicking on the action toolbar icon
+    chrome.sidePanel
+      .setPanelBehavior({ openPanelOnActionClick: true })
+      .catch((error) => console.error(error));
+
     break;
+
   case BrowserType.Firefox:
+    // Display the popup when the action toolbar icon is clicked
     browser.browserAction.onClicked.addListener((tab) => {
       browser.browserAction.setPopup({
         tabId: tab.id,
@@ -25,6 +31,7 @@ switch (getBrowserType()) {
       });
     });
     break;
+
   case BrowserType.Unknown:
   default:
     console.error("No suitable action API found for `onClicked` event!");
@@ -73,6 +80,7 @@ browser.storage.onChanged.addListener((changes, areaName) => {
   }
 });
 
+// Update MRV order when a tab is activated
 browser.tabs.onActivated.addListener((activeInfo) => {
   Logger.logDebug("Before updating MRV order", mrvOrder, activeInfo.tabId);
 
@@ -97,13 +105,62 @@ browser.runtime.onMessage.addListener(
 );
 // END OF Most Recent Version (MRV) order tracking for tabs
 
+const enableSidebar = async () => {
+  console.log("Enabling sidebar");
+
+  switch (getBrowserType()) {
+    case BrowserType.Chrome:
+      await chrome.sidePanel.setOptions({
+        path: "sidebar.html",
+        enabled: true,
+      });
+      // const windowId = await chrome.windows.getCurrent();
+      // chrome.sidePanel.open({ windowId: windowId.id ?? 0 });
+      break;
+
+    case BrowserType.Firefox:
+      await browser.sidebarAction.open();
+      break;
+
+    case BrowserType.Unknown:
+    default:
+      console.error(
+        "No suitable action API found for `enableSidebar` function!"
+      );
+      break;
+  }
+};
+
+const disableSidebar = async () => {
+  console.log("Disabling sidebar");
+
+  switch (getBrowserType()) {
+    case BrowserType.Chrome:
+      await chrome.sidePanel.setOptions({
+        enabled: false,
+      });
+      break;
+
+    case BrowserType.Firefox:
+      await browser.sidebarAction.close();
+      break;
+
+    case BrowserType.Unknown:
+    default:
+      console.error(
+        "No suitable action API found for `disableSidebar` function!"
+      );
+      break;
+  }
+};
+
 // TODO: Probably want to use the actual sidebar state in the long term
 let isSidebarOpen = false;
 
 /**
  * Fired when a registered command is activated using a keyboard shortcut.
  */
-browser.commands.onCommand.addListener((command) => {
+browser.commands.onCommand.addListener(async (command) => {
   if (command === "previous_tab") {
     // If mrvOrder has length 1 it means the user has only visited 1 tab
     // Need at least 2 items in order to navigate to the previous tab
@@ -117,9 +174,9 @@ browser.commands.onCommand.addListener((command) => {
     }
   } else if (command === "toggle_sidebar") {
     if (isSidebarOpen) {
-      browser.sidebarAction.close();
+      await disableSidebar();
     } else {
-      browser.sidebarAction.open();
+      await enableSidebar();
     }
     isSidebarOpen = !isSidebarOpen;
   } else {

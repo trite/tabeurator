@@ -97,6 +97,7 @@ TODOs, planned features, and possible features.
 - [ ] Popup sometimes takes multiple presses of hotkey to be summoned.
 - [ ] Some websites don't play nicely with the `Ctrl+Space` and/or `Ctrl+Shift+Space` hotkeys.
 - [ ] Sidebar has to be closed and reopened to clear messages that are no longer needed. Technically search window only gets this by virtue of being built up from scratch each time. Cause is lack of using `removeMessages` function in both components.
+  - [ ] Similarly, sidebar has to be closed and repopened for a closed tab to disappear
 - [ ] Show if a tab is pinned
 - [ ] Add filtering/sorting options for pinned tabs (pinned tabs only, non-pinned only, all)
 - [ ] Since hotkeys seem flaky sometimes it might be worth moving search from the popup/sidebar to the OmniBox (URL bar).
@@ -106,3 +107,13 @@ TODOs, planned features, and possible features.
 ## Maybe
 
 - [ ] Jump to X tabs ago via shortcut (limited by the MRV list length, only available if MRV is enabled)
+
+## Resuming next
+
+Implementing a sidebar in Chrome is a very different beast than in Firefox. Got lots of little things to iron out, though now the sidebar can be opened in Chrome by clicking the 3 dots next to Tabeurator, then clicking "Open side panel". It can be pinned from there to make things less awful.
+
+Mentioned in TODO's, but relevant: tab info doesn't update for sidebars. Need to add listeners for when tabs are opened or closed, and update the existing one for viewed (for MRV), that updates the tab information in a way that causes UI updates.
+
+Enable/Disable sidebar started as functionality to handle showing and hiding the sidebar using a hotkey. This might be a firefox-only thing if Chrome doesn't support it, it seems like Chrome wants you to show/hide the sidebars in VERY specific ways, and a hotkey might not be usable then.
+
+- [ ] Go back to open/close or show/hide or whatever sidebar. Start figuring out a better way to structure things that are going to be browser specific.
