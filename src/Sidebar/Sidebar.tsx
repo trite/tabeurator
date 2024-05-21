@@ -29,7 +29,11 @@ import MessagePanel, {
 import { logDebug } from "../Shared/Logger";
 import { switchToTab } from "../Shared/Chrome";
 import * as Events from "../State/StateEvents";
-import { TabeuratorState } from "../State/TabeuratorState";
+import {
+  Tab,
+  TabeuratorState,
+  tabFromFirefoxTab,
+} from "../State/TabeuratorState";
 
 // Define a styled component using Emotion
 const StyledBox = styled(Box)({
@@ -54,9 +58,9 @@ const SearchBox: React.FC<{
 );
 
 const ResultsList: React.FC<{
-  tabs: browser.Tabs.Tab[];
+  tabs: Tab[];
   onKeyDown: (event: React.KeyboardEvent) => void;
-  onListItemClick: (tab: browser.Tabs.Tab) => void;
+  onListItemClick: (tab: Tab) => void;
 }> = ({ tabs, onKeyDown, onListItemClick }) => (
   <List onKeyDown={onKeyDown}>
     {tabs.map((tab, index) => (
@@ -109,10 +113,10 @@ const ResultsList: React.FC<{
 type State = {
   query: string;
   focusIndex: number | null;
-  displayedTabs: browser.Tabs.Tab[];
+  displayedTabs: Tab[];
   messages: Message[];
   data: {
-    tabs: browser.Tabs.Tab[];
+    tabs: Tab[];
     config: any;
   };
   tabeuratorState: TabeuratorState;
@@ -121,10 +125,11 @@ type State = {
 type Action =
   | { type: "setQuery"; payload: string }
   | { type: "setFocusIndex"; payload: number | null }
-  | { type: "setDisplayedTabs"; payload: browser.Tabs.Tab[] }
+  | { type: "setDisplayedTabs"; payload: Tab[] }
   | { type: "addMessages"; payload: Message[] }
   | { type: "removeMessages"; payload: Message[] }
-  | { type: "setData"; payload: { tabs: browser.Tabs.Tab[]; config: any } };
+  | { type: "setData"; payload: { tabs: Tab[]; config: any } }
+  | { type: "setTabeuratorState"; payload: TabeuratorState };
 
 // Action helpers
 const setQuery = (dispatch: React.Dispatch<Action>, query: string): void => {
@@ -140,7 +145,7 @@ const setFocusIndex = (
 
 const setDisplayedTabs = (
   dispatch: React.Dispatch<Action>,
-  tabs: browser.Tabs.Tab[]
+  tabs: Tab[]
 ): void => {
   dispatch({ type: "setDisplayedTabs", payload: tabs });
 };
@@ -162,11 +167,18 @@ const removeMessages = (
 const setData = (
   dispatch: React.Dispatch<Action>,
   data: {
-    tabs: browser.Tabs.Tab[];
+    tabs: Tab[];
     config: any;
   }
 ): void => {
   dispatch({ type: "setData", payload: data });
+};
+
+const setTabeuratorState = (
+  dispatch: React.Dispatch<Action>,
+  tabeuratorState: TabeuratorState
+): void => {
+  dispatch({ type: "setTabeuratorState", payload: tabeuratorState });
 };
 
 const reducer = (state: State, action: Action): State => {
@@ -215,6 +227,7 @@ const initialState: State = {
   tabeuratorState: {
     tabs: [],
     windows: [],
+    mostRecentlyViewed: [],
   },
 };
 
@@ -227,21 +240,22 @@ module Messages {
   });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
-    if (
-      message.stateUpdateEvent != undefined &&
-      Events.isStateUpdateEvent(message.stateUpdateEvent)
-    ) {
-      console.log("TODO: StateUpdateEvent", message.stateUpdateEvent);
-    } else {
-      console.log(
-        "Unknown event type received in Sidebar, discarding:",
-        message
-      );
-    }
-  });
-});
+// Moving into a useEffect block for scope reasons
+// document.addEventListener("DOMContentLoaded", () => {
+//   chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
+//     if (
+//       message.stateUpdateEvent != undefined &&
+//       Events.isStateUpdateEvent(message.stateUpdateEvent)
+//     ) {
+//       console.log("TODO: StateUpdateEvent", message.stateUpdateEvent);
+//     } else {
+//       console.log(
+//         "Unknown event type received in Sidebar, discarding:",
+//         message
+//       );
+//     }
+//   });
+// });
 
 const App: React.FC = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -256,6 +270,20 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    // chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
+    //   if (Events.isStateUpdateEventMessage(message)) {
+    //     console.log("Received StateUpdateEvent", message.stateUpdateEvent);
+
+    //     setTabeuratorState(dispatch, message.stateUpdateEvent.newState);
+
+    //     console.log("State updated", state);
+    //   } else {
+    //     console.log(
+    //       "Unknown event type received in Sidebar, discarding:",
+    //       message
+    //     );
+    //   }
+    // });
     const fetchData = async () => {
       const allTabs = await browser.tabs.query({});
       const result = await browser.storage.local.get("sort-method");
@@ -265,7 +293,9 @@ const App: React.FC = () => {
       const currentTab = await getCurrentTab();
 
       // filter out the current tab from the list
-      const allOtherTabs = allTabs.filter((tab) => tab.id !== currentTab.id);
+      const allOtherTabs = allTabs
+        .map(tabFromFirefoxTab)
+        .filter((tab) => tab.id !== currentTab.id);
 
       setData(dispatch, {
         tabs: allOtherTabs,
@@ -377,7 +407,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleListItemClick = (tab: browser.Tabs.Tab) => {
+  const handleListItemClick = (tab: Tab) => {
     switchToTab(tab.id!);
   };
 

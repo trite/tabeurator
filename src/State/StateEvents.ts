@@ -22,6 +22,12 @@ export const isStateUpdateEvent = (
   return event.eventType === "StateUpdateEvent";
 };
 
+export const isStateUpdateEventMessage = (
+  message: any
+): message is { stateUpdateEvent: StateUpdateEvent } => {
+  return isStateUpdateEvent(message.stateUpdateEvent);
+};
+
 // export type EventBase = {
 //   eventType: string;
 // };
