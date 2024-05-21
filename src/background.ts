@@ -3,6 +3,8 @@ import browser from "webextension-polyfill";
 import { SortMethod } from "./Shared/SortMethod";
 import * as Logger from "./Shared/Logger";
 import { BrowserType, getBrowserType, switchToTab } from "./Shared/Chrome";
+import * as Events from "./State/StateEvents";
+import * as StateManager from "./State/StateManager";
 
 // Browser-specific initializations
 switch (getBrowserType()) {
@@ -55,7 +57,7 @@ chrome.runtime.onInstalled.addListener((details) => {
   }
 });
 
-// START OF Most Recent Version (MRV) order tracking for tabs (if enabled)
+// BEGIN Most Recent Version (MRV) order tracking for tabs (if enabled)
 let mrvOrder: number[] = [];
 let trackMrv = true;
 
@@ -80,10 +82,7 @@ browser.storage.onChanged.addListener((changes, areaName) => {
   }
 });
 
-// Update MRV order when a tab is activated
-browser.tabs.onActivated.addListener((activeInfo) => {
-  Logger.logDebug("Before updating MRV order", mrvOrder, activeInfo.tabId);
-
+const updateMrvOrder = (activeInfo: chrome.tabs.TabActiveInfo) => {
   if (trackMrv) {
     const index = mrvOrder.indexOf(activeInfo.tabId);
     if (index > -1) {
@@ -91,9 +90,23 @@ browser.tabs.onActivated.addListener((activeInfo) => {
     }
     mrvOrder.unshift(activeInfo.tabId);
   }
+};
 
-  Logger.logDebug("After updating MRV order", mrvOrder);
-});
+// TODO: remove this probably, might need to rework MRV logic as well
+// Update MRV order when a tab is activated
+// browser.tabs.onActivated.addListener((activeInfo) => {
+//   Logger.logDebug("Before updating MRV order", mrvOrder, activeInfo.tabId);
+
+//   if (trackMrv) {
+//     const index = mrvOrder.indexOf(activeInfo.tabId);
+//     if (index > -1) {
+//       mrvOrder.splice(index, 1);
+//     }
+//     mrvOrder.unshift(activeInfo.tabId);
+//   }
+
+//   Logger.logDebug("After updating MRV order", mrvOrder);
+// });
 
 // Expose a function to get the MRV order
 browser.runtime.onMessage.addListener(
@@ -103,7 +116,59 @@ browser.runtime.onMessage.addListener(
     }
   }
 );
-// END OF Most Recent Version (MRV) order tracking for tabs
+// END Most Recent Version (MRV) order tracking for tabs
+
+// BEGIN Event listeners for tab/window state changes,
+//   state update events will be emitted to the sidebar/popup
+//   so they can update UI accordingly
+
+// TODO: remove below when done with it
+// const notifyStateUpdate = async (event: Events.StateUpdateEvent) => {
+//   console.log("Notifying state update:", event);
+//   await chrome.runtime.sendMessage({
+//     stateUpdateEvent: StateEvents.stateUpdateEvent(event.newState),
+//   });
+// };
+
+chrome.windows.onCreated.addListener(async (window) => {
+  await StateManager.Handlers.windowCreated(window);
+  Logger.logDebug("Window created event emitted:", window);
+});
+
+chrome.windows.onFocusChanged.addListener(async (windowId) => {
+  await StateManager.Handlers.windowFocusChanged(windowId);
+  Logger.logDebug("Window focus changed event emitted:", windowId);
+});
+
+chrome.windows.onRemoved.addListener(async (windowId) => {
+  await StateManager.Handlers.windowRemoved(windowId);
+  Logger.logDebug("Window removed event emitted:", windowId);
+});
+
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+  await StateManager.Handlers.tabActivated(activeInfo);
+  Logger.logDebug("Tab activated event emitted:", activeInfo);
+
+  // TODO: Maybe remove if this ends up being refactored out as part of state stuff?
+  // Update MRV order
+  updateMrvOrder(activeInfo);
+});
+
+chrome.tabs.onCreated.addListener(async (tab) => {
+  await StateManager.Handlers.tabCreated(tab);
+  Logger.logDebug("Tab created event emitted:", tab);
+});
+
+chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
+  await StateManager.Handlers.tabRemoved(tabId, removeInfo);
+  Logger.logDebug("Tab removed event emitted:", tabId, removeInfo);
+});
+
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  await StateManager.Handlers.tabUpdated(tabId, changeInfo, tab);
+  Logger.logDebug("Tab updated event emitted:", tab, changeInfo);
+});
+// END Event listeners for tab/window state changes
 
 const enableSidebar = async () => {
   console.log("Enabling sidebar");
@@ -114,8 +179,6 @@ const enableSidebar = async () => {
         path: "sidebar.html",
         enabled: true,
       });
-      // const windowId = await chrome.windows.getCurrent();
-      // chrome.sidePanel.open({ windowId: windowId.id ?? 0 });
       break;
 
     case BrowserType.Firefox:

@@ -28,6 +28,8 @@ import MessagePanel, {
 } from "../Shared/Components/MessagePanel";
 import { logDebug } from "../Shared/Logger";
 import { switchToTab } from "../Shared/Chrome";
+import * as Events from "../State/StateEvents";
+import { TabeuratorState } from "../State/TabeuratorState";
 
 // Define a styled component using Emotion
 const StyledBox = styled(Box)({
@@ -113,6 +115,7 @@ type State = {
     tabs: browser.Tabs.Tab[];
     config: any;
   };
+  tabeuratorState: TabeuratorState;
 };
 
 type Action =
@@ -209,6 +212,10 @@ const initialState: State = {
     tabs: [],
     config: {},
   },
+  tabeuratorState: {
+    tabs: [],
+    windows: [],
+  },
 };
 
 module Messages {
@@ -220,14 +227,32 @@ module Messages {
   });
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
+    if (
+      message.stateUpdateEvent != undefined &&
+      Events.isStateUpdateEvent(message.stateUpdateEvent)
+    ) {
+      console.log("TODO: StateUpdateEvent", message.stateUpdateEvent);
+    } else {
+      console.log(
+        "Unknown event type received in Sidebar, discarding:",
+        message
+      );
+    }
+  });
+});
+
 const App: React.FC = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const searchBoxRef = useRef<HTMLInputElement>(null);
 
-  const getCurrentTab = () => {
-    return browser.tabs
-      .query({ active: true, currentWindow: true })
-      .then((tabs) => tabs[0]);
+  const getCurrentTab = async () => {
+    const tabs = await browser.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    return tabs[0];
   };
 
   useEffect(() => {
